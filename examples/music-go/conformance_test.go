@@ -3,7 +3,7 @@ package music_test
 // conformance_test.go asserts the protocol, not the catalog.
 //
 // Every case here is a rule from the README that the Rust runtime is held to as
-// well. They are written against the adapter rather than a live socket so they
+// well. They are written against the handler rather than a live socket so they
 // run without a port, and against the same seeded catalog the Rust example
 // serves, so a divergence between the two runtimes shows up as a differing
 // assertion rather than as a subtle behavioural drift nobody looks for.
@@ -18,7 +18,7 @@ import (
 	"github.com/the-protobuf-project/http/examples/music-go"
 )
 
-// serve runs one request against a freshly seeded gateway.
+// serve runs one request against a freshly seeded handler.
 func serve(t *testing.T, method, target string, body string, header http.Header) *http.Response {
 	t.Helper()
 
@@ -30,7 +30,7 @@ func serve(t *testing.T, method, target string, body string, header http.Header)
 	}
 
 	recorder := httptest.NewRecorder()
-	music.NewAdapter(music.SeededCatalog()).ServeHTTP(recorder, request)
+	music.NewHandler(music.SeededCatalog()).ServeHTTP(recorder, request)
 	return recorder.Result()
 }
 

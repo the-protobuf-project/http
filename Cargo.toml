@@ -1,12 +1,12 @@
 # Workspace manifest.
 #
-# Layout: every Rust crate lives under http-rs/. The Go plugin (plugin/) and the
-# Python runtime (http-py/) are outside the workspace and have their own build
-# systems; nothing here references them.
+# Layout: every Rust crate lives under transcode-rs/, beside the Go runtime in
+# transcode-go/. The Go modules have their own build systems and are outside this
+# workspace; nothing here references them.
 
 [workspace]
 resolver = "3"
-members = ["http-rs/grpc-http", "http-rs/grpc-http-build", "examples/music-rs"]
+members = ["transcode-rs/transcode", "transcode-rs/transcode-build", "examples/music-rs"]
 
 # Inherited by every crate via `field.workspace = true`, so version, license and
 # metadata are set in exactly one place at release time.
@@ -23,9 +23,9 @@ categories = ["network-programming", "web-programming::http-server"]
 
 [workspace.dependencies]
 # --- gRPC and protobuf ---------------------------------------------------
-# tonic is the transport under the Rust runtime. The crate is named grpc-http
-# rather than tonic-http because the HTTP surface it implements is defined by
-# google.api.http, not by tonic.
+# tonic is the transport under the Rust runtime. The crate is named transcode
+# rather than tonic-http because the surface it implements is defined by
+# google.api.http and AIP-127, not by tonic.
 tonic = { version = "0.14", default-features = false }
 prost = "0.14"
 prost-types = "0.14"
@@ -72,7 +72,7 @@ tracing = "0.1"
 # --- dev -----------------------------------------------------------------
 tokio-test = "0.4"
 
-grpc-http = { path = "http-rs/grpc-http", version = "0.1.0" }
+transcode = { path = "transcode-rs/transcode", version = "0.1.0" }
 
 # Lints are declared once and inherited with `[lints] workspace = true`.
 [workspace.lints.rust]

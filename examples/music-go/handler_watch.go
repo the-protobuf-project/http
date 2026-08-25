@@ -5,8 +5,8 @@ package music
 
 import (
 	"github.com/the-protobuf-project/http/examples/music-go/gen/music/v1"
-	"github.com/the-protobuf-project/http/netadapter"
-	"github.com/the-protobuf-project/http/netadapter/apierr"
+	"github.com/the-protobuf-project/http/transcode-go"
+	"github.com/the-protobuf-project/http/transcode-go/apierr"
 )
 
 // FailAfter is a query parameter the example honours to fail a stream
@@ -25,7 +25,7 @@ const FailAfter = "failAfter"
 // The stream's headers are not written when it opens: they go out with the
 // first Send. A failure before then — a bad parent, an authorization refusal —
 // therefore still gets its real status and an ordinary error body.
-func (s *Service) watchTracks(call *netadapter.Call, out *netadapter.Stream) error {
+func (s *Service) watchTracks(call *transcode.Call, out *transcode.Stream) error {
 	parent, err := call.Capture("parent")
 	if err != nil {
 		return err
@@ -55,7 +55,7 @@ func (s *Service) watchTracks(call *netadapter.Call, out *netadapter.Stream) err
 		}
 		if err := out.Send(encoded); err != nil {
 			// The peer is gone. There is nobody left to report to, and the
-			// gateway cancels the underlying RPC on its own.
+			// transcoder cancels the underlying RPC on its own.
 			return nil
 		}
 	}

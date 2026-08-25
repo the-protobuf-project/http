@@ -10,8 +10,8 @@ package music
 // protos.
 
 import (
-	"github.com/the-protobuf-project/http/netadapter"
-	"github.com/the-protobuf-project/http/netadapter/apierr"
+	"github.com/the-protobuf-project/http/transcode-go"
+	"github.com/the-protobuf-project/http/transcode-go/apierr"
 	"google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/proto"
 )
@@ -35,7 +35,7 @@ var unmarshal = protojson.UnmarshalOptions{}
 //
 // An empty body is a valid message with every field at its default, which is
 // what a POST with no body means.
-func decode[M proto.Message](call *netadapter.Call, message M) error {
+func decode[M proto.Message](call *transcode.Call, message M) error {
 	if len(call.Body) == 0 {
 		return nil
 	}
@@ -46,12 +46,12 @@ func decode[M proto.Message](call *netadapter.Call, message M) error {
 }
 
 // reply encodes a 200.
-func reply(call *netadapter.Call, message proto.Message) (*netadapter.Reply, error) {
+func reply(call *transcode.Call, message proto.Message) (*transcode.Reply, error) {
 	body, err := marshal.Marshal(message)
 	if err != nil {
 		return nil, encodeFailed(call)
 	}
-	return netadapter.NewReply(200, body).
+	return transcode.NewReply(200, body).
 		WithHeader("Content-Type", call.ResponseCodec.ContentType()), nil
 }
 
@@ -59,7 +59,7 @@ func reply(call *netadapter.Call, message proto.Message) (*netadapter.Reply, err
 //
 // The Location is what lets a client follow the response without knowing how
 // resource names are formed.
-func created(call *netadapter.Call, message proto.Message, location string) (*netadapter.Reply, error) {
+func created(call *transcode.Call, message proto.Message, location string) (*transcode.Reply, error) {
 	out, err := reply(call, message)
 	if err != nil {
 		return nil, err
@@ -70,13 +70,13 @@ func created(call *netadapter.Call, message proto.Message, location string) (*ne
 
 // noContent encodes a 204, for a google.protobuf.Empty response with no
 // response_body.
-func noContent() (*netadapter.Reply, error) {
-	return netadapter.NewReply(204, nil), nil
+func noContent() (*transcode.Reply, error) {
+	return transcode.NewReply(204, nil), nil
 }
 
 // encodeFailed is the 500 for a message that could not be encoded, which is a
 // service bug rather than anything the caller did.
-func encodeFailed(call *netadapter.Call) error {
+func encodeFailed(call *transcode.Call) error {
 	return apierr.New(apierr.Internal, "The response could not be encoded.").
 		WithErrorInfo("ENCODE_FAILED", call.Domain, map[string]string{
 			"method": call.Method.FullName,

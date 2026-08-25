@@ -94,20 +94,20 @@ curl -i 'http://127.0.0.1:8080/v1/artists/nobody/tracks:watch'  # 404, not a 200
 http/
   Cargo.toml            Rust workspace root
   Justfile              every task; `just` lists them
-  go.work               local-only, gitignored — see below
+  go.work               the four Go modules, so root-level commands resolve
 
   plugin/               protoc-gen-http, the Go generator (its own module)
-    gateway/            the factory model over the service IR
+    ir/                 the service IR as a protokit factory model
     target/table/       the language-neutral route-table view, shared by targets
     target/rust/        the Rust emitter
     target/golang/      the Go emitter
     cmd/protoc-gen-http/
 
-  http-rs/
-    grpc-http/          the Rust runtime, a tower::Service
-    grpc-http-build/    build.rs integration
+  transcode-rs/
+    transcode/          the Rust runtime, a tower::Service
+    transcode-build/    build.rs integration
 
-  netadapter/           the Go runtime, an http.Handler (its own module)
+  transcode-go/         the Go runtime, an http.Handler (its own module)
   http-py/              deferred
 
   examples/
@@ -116,7 +116,7 @@ http/
       src/generated/    emitted by protoc-gen-http; do not edit
     music-go/           the Go proof of concept (its own module)
       gen/              messages, emitted by protoc-gen-go; do not edit
-      gateway/          the route table, emitted by protoc-gen-http; do not edit
+      routes/           the route table, emitted by protoc-gen-http; do not edit
 ```
 
 Neither example hand-writes its message types. `protoc-gen-go` emits them and
@@ -153,8 +153,8 @@ make a clean checkout fail.
 ## Shape
 
 ```
-.proto  ─┐                                   ┌─► rust target    ──► http-rs
-         ├─► protoc-gen-http ──► Service IR ──┼─► go target      ──► netadapter
+.proto  ─┐                                   ┌─► rust target    ──► transcode-rs
+         ├─► protoc-gen-http ──► Service IR ──┼─► go target      ──► transcode-go
 buf.yaml ┘      (Go, on protokit)             └─► openapi target ──► openapi.yaml
 ```
 
@@ -235,7 +235,7 @@ dominating, naming both and an example path that matches each.
 `shelves/{shelf}/books/{book}` for OpenAPI, turning an opaque single `{name}`
 parameter into named ones.
 
-The cost, stated plainly: `grpc-http-build` is not a pure-cargo `build.rs`; it
+The cost, stated plainly: `transcode-build` is not a pure-cargo `build.rs`; it
 wraps the plugin binary. A future `prost-reflect` dynamic proxy would need a
 runtime parser, and that is a separate mode.
 
@@ -314,18 +314,18 @@ gateway
 ```
 
 ```go
-netadapter.New(table, codecs, service, domain,
-    netadapter.Use(builtin.NewRecovery(logger)),
-    netadapter.Use(builtin.NewDeadline(30*time.Second, domain)),
-    netadapter.UseFor(builtin.Bearer(verifier, domain), middleware.Mutating()),
-    netadapter.UseFor(builtin.NewRateLimit(limits, domain), middleware.Pattern(route.PatternList)),
+transcode.New(routes.NewTable(), routes.NewRegistry(), service, routes.Domain,
+    transcode.Use(builtin.NewRecovery(logger)),
+    transcode.Use(builtin.NewDeadline(30*time.Second, domain)),
+    transcode.UseFor(builtin.Bearer(verifier, domain), middleware.Mutating()),
+    transcode.UseFor(builtin.NewRateLimit(limits, domain), middleware.Pattern(route.PatternList)),
 )
 ```
 
 `Mutating` resolves against the AIP pattern the generator emitted, so adding a
 Create later is covered automatically — a policy written against a name prefix
 would silently miss it. In Go the selection is resolved once per method when the
-adapter is built, since a selector is a predicate over a method table that is
+handler is built, since a selector is a predicate over a method table that is
 fixed at generation time.
 
 ### What ships in the box
@@ -413,7 +413,7 @@ AIP-131 says `GetArtist` returns `Artist`, buf wants `GetArtistResponse`.
 | Codegen home | Go plugin on protokit | one frontend for four targets; the protobuf ecosystem is Go |
 | Template parsing | build time only; runtimes execute a compiled table | one grammar, and conflicts become compile errors |
 | IR home | `protokit/service` (v1.3.0) | a second generator — an MCP adapter, say — consumes it without depending on this repo |
-| Go runtime name | `netadapter`, not `gateway` | the table, the classification and the error model are protocol-neutral; naming this one "gateway" would make the general thing sound like the HTTP special case |
+| Go runtime name | `transcode`, not `gateway` | it names the job `google.api.http` and AIP-127 name, so the import path says what the code does; "gateway" names a topology, and is the project this one disagrees with |
 | JSON semantics | protojson, no deviations | a generated client and the gateway must agree exactly |
 | Error envelope | AIP-193 always | the convention the rest of the ecosystem reads |
 | Streaming default | JSON array, SSE on `?alt=sse` / `Accept` | matches Google's own REST streaming |

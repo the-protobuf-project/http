@@ -42,7 +42,7 @@ to spot.
 
 | Language | Status |
 | --- | --- |
-| `rust` | emits the `grpc-http` route table |
+| `rust` | emits the `transcode` route table |
 | `go`, `python`, `openapi` | not yet built; the IR they consume is complete |
 
 ## Layout

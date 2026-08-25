@@ -2,10 +2,10 @@
 
 use crate::generated::{DOMAIN, Method};
 use crate::store::Catalog;
-use grpc_http::codec::{Decode, JsonCodec};
-use grpc_http::error::{Code, GatewayError};
 use serde::de::DeserializeOwned;
 use std::collections::HashMap;
+use transcode::codec::{Decode, JsonCodec};
+use transcode::error::{Code, Error};
 
 /// A resolved request, ready for a method handler.
 ///
@@ -13,7 +13,7 @@ use std::collections::HashMap;
 /// decodes it was decided by negotiation and the handler knows its own types.
 #[derive(Debug)]
 pub struct Call<'a> {
-    /// The catalog behind the gateway.
+    /// The catalog behind the handler.
     pub catalog: &'a Catalog,
     /// Path captures, keyed by protojson field path.
     pub path: HashMap<&'static str, String>,
@@ -35,10 +35,10 @@ impl Call<'_> {
     /// `INTERNAL` when the capture is absent, which would mean the route table
     /// and the handler disagree — a generator bug rather than a caller error,
     /// so it is not a `400`.
-    pub fn capture(&self, field: &str) -> Result<&str, Box<GatewayError>> {
+    pub fn capture(&self, field: &str) -> Result<&str, Box<Error>> {
         self.path.get(field).map(String::as_str).ok_or_else(|| {
             Box::new(
-                GatewayError::new(Code::Internal, format!("Route did not bind {field:?}."))
+                Error::new(Code::Internal, format!("Route did not bind {field:?}."))
                     .with_error_info(
                         "BINDING_MISMATCH",
                         DOMAIN,
@@ -54,12 +54,12 @@ impl Call<'_> {
     ///
     /// `400` with a `FieldViolation` when the value is not a number, naming the
     /// parameter as the client spelled it.
-    pub fn query_usize(&self, name: &str) -> Result<usize, Box<GatewayError>> {
+    pub fn query_usize(&self, name: &str) -> Result<usize, Box<Error>> {
         match self.query.get(name) {
             None => Ok(0),
             Some(raw) => raw.parse().map_err(|_| {
-                Box::new(GatewayError::invalid_fields(
-                    vec![grpc_http::error::FieldViolation {
+                Box::new(Error::invalid_fields(
+                    vec![transcode::error::FieldViolation {
                         field: name.to_string(),
                         description: format!("Expected a number, got {raw:?}."),
                         reason: "INVALID_VALUE".into(),
@@ -98,7 +98,7 @@ impl Call<'_> {
     /// `400` naming the offending field, so a typo is reported rather than
     /// silently ignored — the behaviour README §2 requires and
     /// grpc-gateway does not provide for query parameters.
-    pub fn decode<M: DeserializeOwned>(&self) -> Result<M, Box<GatewayError>> {
+    pub fn decode<M: DeserializeOwned>(&self) -> Result<M, Box<Error>> {
         JsonCodec::new()
             .decode(&self.body)
             .map_err(|err| Box::new(err.into_gateway_error(DOMAIN, self.method.full_name())))
@@ -110,8 +110,8 @@ impl Call<'_> {
     ///
     /// The mapped status, so a handler can use `?` and never construct an HTTP
     /// status itself.
-    pub fn rpc<T>(&self, result: Result<T, tonic::Status>) -> Result<T, Box<GatewayError>> {
-        result.map_err(|status| Box::new(GatewayError::from_status(&status, DOMAIN)))
+    pub fn rpc<T>(&self, result: Result<T, tonic::Status>) -> Result<T, Box<Error>> {
+        result.map_err(|status| Box::new(Error::from_status(&status, DOMAIN)))
     }
 
     /// A boolean query parameter, absent meaning false.

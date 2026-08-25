@@ -6,9 +6,9 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/the-protobuf-project/http/examples/music-go/gateway"
 	"github.com/the-protobuf-project/http/examples/music-go/gen/music/v1"
-	"github.com/the-protobuf-project/http/netadapter/apierr"
+	"github.com/the-protobuf-project/http/examples/music-go/routes"
+	"github.com/the-protobuf-project/http/transcode-go/apierr"
 )
 
 // GetArtist returns one artist. (AIP-131)
@@ -116,7 +116,7 @@ func (c *Catalog) DeleteArtist(name string, force bool) error {
 	if len(children) > 0 && !force {
 		return apierr.New(apierr.FailedPrecondition,
 			fmt.Sprintf("Artist %q still has %d tracks.", name, len(children))).
-			WithErrorInfo("CHILDREN_PRESENT", gateway.Domain, map[string]string{
+			WithErrorInfo("CHILDREN_PRESENT", routes.Domain, map[string]string{
 				"resource": name,
 				"children": fmt.Sprintf("%d", len(children)),
 			}).
@@ -153,7 +153,7 @@ func malformedName(pattern, got string) *apierr.Error {
 		Field:       "name",
 		Description: fmt.Sprintf("must match pattern %q, got %q", pattern, got),
 		Reason:      "RESOURCE_NAME_MALFORMED",
-	}}, "INVALID_ARGUMENT", gateway.Domain, "")
+	}}, "INVALID_ARGUMENT", routes.Domain, "")
 }
 
 // immutableField is the error for an update mask naming a field that cannot be
@@ -163,5 +163,5 @@ func immutableField(field string) *apierr.Error {
 		Field:       field,
 		Description: "This field cannot be updated.",
 		Reason:      "FIELD_IMMUTABLE",
-	}}, "INVALID_ARGUMENT", gateway.Domain, "")
+	}}, "INVALID_ARGUMENT", routes.Domain, "")
 }

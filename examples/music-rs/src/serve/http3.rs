@@ -6,11 +6,11 @@
 //! What is worth noticing is how similar this is to the HTTP/1.1 listener. The
 //! transport is entirely different — streams instead of a byte pipe, a QUIC
 //! handshake instead of a TCP one — but the request handling is the same call
-//! to the same function, because the gateway never knew which transport it was
+//! to the same function, because the handler never knew which transport it was
 //! behind.
 
 use super::handle;
-use crate::handler::Gateway;
+use crate::handler::Handler;
 use bytes::{Buf, Bytes};
 use h3::server::Connection;
 use http::Request;
@@ -26,7 +26,7 @@ use std::sync::Arc;
 /// the QUIC layer. Per-connection failures are logged and the listener
 /// continues.
 pub async fn serve(
-    gateway: Gateway,
+    handler: Handler,
     addr: SocketAddr,
     tls: rustls::ServerConfig,
 ) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
@@ -35,14 +35,14 @@ pub async fn serve(
     let endpoint = quinn::Endpoint::server(server_config, addr)?;
     tracing::info!(%addr, "http/3 listening (quic, tls 1.3)");
 
-    let gateway = Arc::new(gateway);
+    let handler = Arc::new(handler);
     while let Some(incoming) = endpoint.accept().await {
-        let gateway = Arc::clone(&gateway);
+        let handler = Arc::clone(&handler);
 
         tokio::spawn(async move {
             match incoming.await {
                 Ok(conn) => {
-                    if let Err(err) = serve_connection(&gateway, conn).await {
+                    if let Err(err) = serve_connection(&handler, conn).await {
                         tracing::debug!(?err, "http/3 connection ended");
                     }
                 }
@@ -55,7 +55,7 @@ pub async fn serve(
 
 /// Serves every request on one QUIC connection.
 async fn serve_connection(
-    gateway: &Arc<Gateway>,
+    handler: &Arc<Handler>,
     conn: quinn::Connection,
 ) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
     let mut h3_conn = Connection::new(h3_quinn::Connection::new(conn)).await?;
@@ -64,9 +64,9 @@ async fn serve_connection(
         match h3_conn.accept().await {
             Ok(Some(resolver)) => {
                 let (request, stream) = resolver.resolve_request().await?;
-                let gateway = Arc::clone(gateway);
+                let handler = Arc::clone(handler);
                 tokio::spawn(async move {
-                    if let Err(err) = respond(&gateway, request, stream).await {
+                    if let Err(err) = respond(&handler, request, stream).await {
                         tracing::debug!(?err, "http/3 request failed");
                     }
                 });
@@ -78,9 +78,9 @@ async fn serve_connection(
     }
 }
 
-/// Reads one request body, calls the gateway, and writes the response.
+/// Reads one request body, calls the handler, and writes the response.
 async fn respond<S>(
-    gateway: &Gateway,
+    handler: &Handler,
     request: Request<()>,
     mut stream: h3::server::RequestStream<S, Bytes>,
 ) -> Result<(), Box<dyn std::error::Error + Send + Sync>>
@@ -95,7 +95,7 @@ where
     let (parts, ()) = request.into_parts();
     let rebuilt = Request::from_parts(parts, http_body_util::Full::new(Bytes::from(body)));
 
-    let response = handle(gateway, rebuilt).await;
+    let response = handle(handler, rebuilt).await;
     let (parts, response_body) = response.into_parts();
 
     stream

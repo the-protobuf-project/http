@@ -5,7 +5,7 @@ package music
 import (
 	"sync"
 
-	"github.com/the-protobuf-project/http/examples/music-go/gateway"
+	"github.com/the-protobuf-project/http/examples/music-go/routes"
 )
 
 // Domain returns the API's error domain, which the generated table holds.
@@ -13,7 +13,7 @@ import (
 // A function so the binary and the tests reach it without importing the
 // generated package directly, which keeps the example's import graph one layer
 // deep.
-func Domain() string { return gateway.Domain }
+func Domain() string { return routes.Domain }
 
 // RequestIDs remembers the AIP-155 request ids already seen.
 //

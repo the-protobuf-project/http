@@ -1,7 +1,7 @@
 package music_test
 
 // streaming_test.go covers README §6.2, the rule the rest of the protocol is
-// arranged to make satisfiable: an adapter must not report a 2xx for an RPC that
+// arranged to make satisfiable: a transcoder must not report a 2xx for an RPC that
 // did not succeed.
 //
 // Both halves are asserted here. A stream that fails before its first message
@@ -41,7 +41,7 @@ func serveStream(t *testing.T, target string) (*http.Response, bool) {
 			}
 		}()
 		request := httptest.NewRequest(http.MethodGet, target, nil)
-		music.NewAdapter(music.SeededCatalog()).ServeHTTP(recorder, request)
+		music.NewHandler(music.SeededCatalog()).ServeHTTP(recorder, request)
 	}()
 
 	return recorder.Result(), truncated

@@ -1,11 +1,11 @@
-# The proof of concept: the music catalog served over HTTP by grpc-http.
+# The proof of concept: the music catalog served over HTTP by transcode.
 #
 # Not published — this exists to prove the runtime works end to end and to show
 # what protoc-gen-http must emit.
 
 [package]
 name = "music-example"
-description = "Proof-of-concept music catalog served by grpc-http"
+description = "Proof-of-concept music catalog served by transcode"
 publish = false
 version.workspace = true
 edition.workspace = true
@@ -17,7 +17,7 @@ repository.workspace = true
 workspace = true
 
 [dependencies]
-grpc-http = { workspace = true, features = ["json"] }
+transcode = { workspace = true, features = ["json"] }
 tonic = { workspace = true }
 http = { workspace = true }
 bytes = { workspace = true }

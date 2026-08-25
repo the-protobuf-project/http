@@ -1,7 +1,7 @@
 //! HTTP/1.1, plaintext and over TLS.
 
 use super::handle;
-use crate::handler::Gateway;
+use crate::handler::Handler;
 use hyper::server::conn::http1;
 use hyper::service::service_fn;
 use hyper_util::rt::TokioIo;
@@ -19,20 +19,20 @@ use tokio::net::TcpListener;
 /// Fails if the address cannot be bound. Per-connection errors are logged and
 /// the listener continues: one client hanging up mid-request is not a reason to
 /// stop serving everyone else.
-pub async fn serve(gateway: Gateway, addr: SocketAddr) -> std::io::Result<()> {
+pub async fn serve(handler: Handler, addr: SocketAddr) -> std::io::Result<()> {
     let listener = TcpListener::bind(addr).await?;
     tracing::info!(%addr, "http/1.1 listening (plaintext)");
 
-    let gateway = Arc::new(gateway);
+    let handler = Arc::new(handler);
     loop {
         let (stream, peer) = listener.accept().await?;
-        let gateway = Arc::clone(&gateway);
+        let handler = Arc::clone(&handler);
 
         tokio::spawn(async move {
             let io = TokioIo::new(stream);
             let service = service_fn(move |req| {
-                let gateway = Arc::clone(&gateway);
-                async move { Ok::<_, std::convert::Infallible>(handle(&gateway, req).await) }
+                let handler = Arc::clone(&handler);
+                async move { Ok::<_, std::convert::Infallible>(handle(&handler, req).await) }
             });
 
             if let Err(err) = http1::Builder::new().serve_connection(io, service).await {

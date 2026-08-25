@@ -13,7 +13,7 @@
 //! Shared between routes because several bindings differ only in HTTP method:
 //! `GET`, `PATCH`, and `DELETE` on one resource all walk the same path.
 
-use grpc_http::route::Match;
+use transcode::route::Match;
 
 /// `/v1/artists/*/tracks/*`
 pub(crate) static M_ARTISTS_ANY_TRACKS_ANY: &[Match] = &[
@@ -40,8 +40,4 @@ pub(crate) static M_ARTISTS_ANY: &[Match] = &[
 ];
 
 /// `/v1/artists`
-pub(crate) static M_ARTISTS: &[Match] = &[
-    Match::Literal("v1"),
-    Match::Literal("artists"),
-];
-
+pub(crate) static M_ARTISTS: &[Match] = &[Match::Literal("v1"), Match::Literal("artists")];

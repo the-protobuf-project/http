@@ -11,12 +11,12 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/the-protobuf-project/http/netadapter"
-	"github.com/the-protobuf-project/http/netadapter/apierr"
+	"github.com/the-protobuf-project/http/transcode-go"
+	"github.com/the-protobuf-project/http/transcode-go/apierr"
 )
 
 // queryInt reads a query parameter as an int, defaulting to zero when absent.
-func queryInt(call *netadapter.Call, name string) (int, error) {
+func queryInt(call *transcode.Call, name string) (int, error) {
 	raw := call.Query.Get(name)
 	if raw == "" {
 		return 0, nil
@@ -36,7 +36,7 @@ func queryInt(call *netadapter.Call, name string) (int, error) {
 //
 // Bare presence counts as true, which is what ?force means to anyone typing it,
 // and matches how protojson accepts a boolean in a query string.
-func queryBool(call *netadapter.Call, name string) bool {
+func queryBool(call *transcode.Call, name string) bool {
 	if !call.Query.Has(name) {
 		return false
 	}
@@ -48,7 +48,7 @@ func queryBool(call *netadapter.Call, name string) bool {
 //
 // An absent mask yields an empty list, which AIP-134 defines as "replace every
 // mutable field".
-func updateMask(call *netadapter.Call) []string {
+func updateMask(call *transcode.Call) []string {
 	raw := call.Query.Get("updateMask")
 	if raw == "" {
 		return nil

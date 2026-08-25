@@ -1,13 +1,13 @@
 //! Listeners.
 //!
-//! The point of this module is how little there is in it. [`Gateway::serve`]
+//! The point of this module is how little there is in it. [`Handler::serve`]
 //! is a plain function from a method, a URI, and a body to a [`Reply`] — it
 //! knows nothing about connections, TLS, or protocol versions. Each listener
 //! below is a small adapter that reads a request off its own transport, calls
 //! that one function, and writes the answer back.
 //!
 //! That is the concrete payoff of the `tower::Service` shape in
-//! the README: an HTTP/3 gateway is the same handler behind a QUIC
+//! the README: an HTTP/3 handler is the same handler behind a QUIC
 //! socket, not a second implementation.
 //!
 //! # Transport matrix
@@ -22,7 +22,7 @@
 //! in the transport handshake, so an unencrypted HTTP/3 connection is not a
 //! thing the protocol can express.
 //!
-//! [`Gateway::serve`]: crate::handler::Gateway::serve
+//! [`Handler::serve`]: crate::handler::Handler::serve
 //! [`Reply`]: crate::handler::Reply
 
 pub mod cert;
@@ -32,17 +32,17 @@ pub mod tls;
 #[cfg(feature = "http3")]
 pub mod http3;
 
-use crate::handler::{Gateway, Reply};
+use crate::handler::{Handler, Reply};
 use bytes::Bytes;
 use http::{Method, Request, Response};
 use http_body_util::{BodyExt, Full};
 
-/// Adapts an `http::Request` to the gateway and back.
+/// Adapts an `http::Request` to the handler and back.
 ///
 /// Every listener funnels through this, which is what keeps their behaviour
 /// identical: an HTTP/1.1 client and an HTTP/3 client hitting the same path get
 /// byte-identical responses because they run the same code.
-pub async fn handle<B>(gateway: &Gateway, request: Request<B>) -> Response<Full<Bytes>>
+pub async fn handle<B>(handler: &Handler, request: Request<B>) -> Response<Full<Bytes>>
 where
     B: http_body::Body,
     B::Error: std::fmt::Debug,
@@ -65,7 +65,7 @@ where
         .get(http::header::ACCEPT)
         .and_then(|value| value.to_str().ok());
 
-    into_response(gateway.serve_with(&parts.method, &uri, bytes, accept))
+    into_response(handler.serve_with(&parts.method, &uri, bytes, accept))
 }
 
 /// Converts a [`Reply`] into an `http::Response`.

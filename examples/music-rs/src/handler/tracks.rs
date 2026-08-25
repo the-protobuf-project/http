@@ -3,18 +3,18 @@
 use super::{Call, Reply};
 use crate::model::Track;
 use crate::requests::{Empty, ListTracksResponse, WithdrawTrackBody};
-use grpc_http::error::GatewayError;
 use http::StatusCode;
+use transcode::error::Error;
 
 /// `GET /v1/{name=artists/*/tracks/*}` — the multi-segment capture.
-pub(super) fn get(call: &Call<'_>) -> Result<Reply, Box<GatewayError>> {
+pub(super) fn get(call: &Call<'_>) -> Result<Reply, Box<Error>> {
     let name = call.capture("name")?;
     let track = call.rpc(call.catalog.get_track(name))?;
     call.ok(&track)
 }
 
 /// `GET /v1/{parent=artists/*}/tracks` — a capture followed by a literal.
-pub(super) fn list(call: &Call<'_>) -> Result<Reply, Box<GatewayError>> {
+pub(super) fn list(call: &Call<'_>) -> Result<Reply, Box<Error>> {
     let parent = call.capture("parent")?;
     let page_size = call.query_usize("pageSize")?;
     let tracks = call.rpc(call.catalog.list_tracks(parent, page_size))?;
@@ -25,7 +25,7 @@ pub(super) fn list(call: &Call<'_>) -> Result<Reply, Box<GatewayError>> {
 }
 
 /// `POST /v1/{parent=artists/*}/tracks` with `body: "track"`.
-pub(super) fn create(call: &Call<'_>) -> Result<Reply, Box<GatewayError>> {
+pub(super) fn create(call: &Call<'_>) -> Result<Reply, Box<Error>> {
     let parent = call.capture("parent")?.to_string();
     let mut track: Track = call.decode()?;
     if track.name.is_empty() {
@@ -36,7 +36,7 @@ pub(super) fn create(call: &Call<'_>) -> Result<Reply, Box<GatewayError>> {
 }
 
 /// `PATCH /v1/{track.name=artists/*/tracks/*}` with `body: "track"`.
-pub(super) fn update(call: &Call<'_>) -> Result<Reply, Box<GatewayError>> {
+pub(super) fn update(call: &Call<'_>) -> Result<Reply, Box<Error>> {
     let name = call.capture("track.name")?.to_string();
     let patch: Track = call.decode()?;
     let updated = call.rpc(call.catalog.update_track(&name, patch, &call.update_mask()))?;
@@ -44,7 +44,7 @@ pub(super) fn update(call: &Call<'_>) -> Result<Reply, Box<GatewayError>> {
 }
 
 /// `DELETE /v1/{name=artists/*/tracks/*}`
-pub(super) fn delete(call: &Call<'_>) -> Result<Reply, Box<GatewayError>> {
+pub(super) fn delete(call: &Call<'_>) -> Result<Reply, Box<Error>> {
     let name = call.capture("name")?;
     call.rpc(call.catalog.delete_track(name))?;
 
@@ -59,7 +59,7 @@ pub(super) fn delete(call: &Call<'_>) -> Result<Reply, Box<GatewayError>> {
 /// The custom verb is the case a general-purpose router mis-binds: `matchit`
 /// accepts this template and folds `:withdraw` into `name`, so the handler
 /// would look up a track literally named `…/tracks/t1:withdraw`.
-pub(super) fn withdraw(call: &Call<'_>) -> Result<Reply, Box<GatewayError>> {
+pub(super) fn withdraw(call: &Call<'_>) -> Result<Reply, Box<Error>> {
     let name = call.capture("name")?.to_string();
 
     // `body: "*"` means the whole message, but `name` came from the path, and

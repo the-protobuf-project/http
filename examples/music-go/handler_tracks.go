@@ -4,11 +4,11 @@ package music
 
 import (
 	"github.com/the-protobuf-project/http/examples/music-go/gen/music/v1"
-	"github.com/the-protobuf-project/http/netadapter"
+	"github.com/the-protobuf-project/http/transcode-go"
 )
 
 // getTrack serves GET /v1/{name=artists/*/tracks/*}.
-func (s *Service) getTrack(call *netadapter.Call) (*netadapter.Reply, error) {
+func (s *Service) getTrack(call *transcode.Call) (*transcode.Reply, error) {
 	name, err := call.Capture("name")
 	if err != nil {
 		return nil, err
@@ -21,7 +21,7 @@ func (s *Service) getTrack(call *netadapter.Call) (*netadapter.Reply, error) {
 }
 
 // listTracks serves GET /v1/{parent=artists/*}/tracks.
-func (s *Service) listTracks(call *netadapter.Call) (*netadapter.Reply, error) {
+func (s *Service) listTracks(call *transcode.Call) (*transcode.Reply, error) {
 	parent, err := call.Capture("parent")
 	if err != nil {
 		return nil, err
@@ -42,7 +42,7 @@ func (s *Service) listTracks(call *netadapter.Call) (*netadapter.Reply, error) {
 }
 
 // createTrack serves POST /v1/{parent=artists/*}/tracks with body: "track".
-func (s *Service) createTrack(call *netadapter.Call) (*netadapter.Reply, error) {
+func (s *Service) createTrack(call *transcode.Call) (*transcode.Reply, error) {
 	parent, err := call.Capture("parent")
 	if err != nil {
 		return nil, err
@@ -64,7 +64,7 @@ func (s *Service) createTrack(call *netadapter.Call) (*netadapter.Reply, error) 
 
 // updateTrack serves PATCH /v1/{track.name=artists/*/tracks/*} with
 // body: "track".
-func (s *Service) updateTrack(call *netadapter.Call) (*netadapter.Reply, error) {
+func (s *Service) updateTrack(call *transcode.Call) (*transcode.Reply, error) {
 	name, err := call.Capture("track.name")
 	if err != nil {
 		return nil, err
@@ -85,7 +85,7 @@ func (s *Service) updateTrack(call *netadapter.Call) (*netadapter.Reply, error) 
 }
 
 // deleteTrack serves DELETE /v1/{name=artists/*/tracks/*}.
-func (s *Service) deleteTrack(call *netadapter.Call) (*netadapter.Reply, error) {
+func (s *Service) deleteTrack(call *transcode.Call) (*transcode.Reply, error) {
 	name, err := call.Capture("name")
 	if err != nil {
 		return nil, err
@@ -102,7 +102,7 @@ func (s *Service) deleteTrack(call *netadapter.Call) (*netadapter.Reply, error) 
 // The custom-verb route, which is the one a general-purpose HTTP router cannot
 // express: it would accept the template and silently bind ":withdraw" into the
 // resource name.
-func (s *Service) withdrawTrack(call *netadapter.Call) (*netadapter.Reply, error) {
+func (s *Service) withdrawTrack(call *transcode.Call) (*transcode.Reply, error) {
 	name, err := call.Capture("name")
 	if err != nil {
 		return nil, err

@@ -263,44 +263,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "grpc-http"
-version = "0.1.0"
-dependencies = [
- "bytes",
- "futures-util",
- "h3",
- "h3-quinn",
- "http",
- "http-body",
- "http-body-util",
- "percent-encoding",
- "prost",
- "prost-types",
- "quinn",
- "rustls",
- "rustls-pemfile",
- "serde",
- "serde_json",
- "thiserror",
- "tokio",
- "tokio-rustls",
- "tokio-test",
- "tonic",
- "tower",
- "tower-service",
- "tracing",
-]
-
-[[package]]
-name = "grpc-http-build"
-version = "0.1.0"
-dependencies = [
- "prost",
- "prost-build",
- "prost-types",
-]
-
-[[package]]
 name = "h2"
 version = "0.4.19"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -536,7 +498,6 @@ name = "music-example"
 version = "0.1.0"
 dependencies = [
  "bytes",
- "grpc-http",
  "h3",
  "h3-quinn",
  "http",
@@ -554,6 +515,7 @@ dependencies = [
  "tokio-rustls",
  "tonic",
  "tracing",
+ "transcode",
 ]
 
 [[package]]
@@ -1250,6 +1212,44 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "db97caf9d906fbde555dd62fa95ddba9eecfd14cb388e4f491a66d74cd5fb79a"
 dependencies = [
  "once_cell",
+]
+
+[[package]]
+name = "transcode"
+version = "0.1.0"
+dependencies = [
+ "bytes",
+ "futures-util",
+ "h3",
+ "h3-quinn",
+ "http",
+ "http-body",
+ "http-body-util",
+ "percent-encoding",
+ "prost",
+ "prost-types",
+ "quinn",
+ "rustls",
+ "rustls-pemfile",
+ "serde",
+ "serde_json",
+ "thiserror",
+ "tokio",
+ "tokio-rustls",
+ "tokio-test",
+ "tonic",
+ "tower",
+ "tower-service",
+ "tracing",
+]
+
+[[package]]
+name = "transcode-build"
+version = "0.1.0"
+dependencies = [
+ "prost",
+ "prost-build",
+ "prost-types",
 ]
 
 [[package]]

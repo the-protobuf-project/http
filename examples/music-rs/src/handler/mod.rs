@@ -5,7 +5,7 @@
 //! works end to end before the generator exists.
 //!
 //! The order is the one README §2 fixes, and every stage funnels its
-//! failure through the same [`GatewayError`], which is the property
+//! failure through the same [`Error`], which is the property
 //! grpc-gateway lacks:
 //!
 //! ```text
@@ -15,10 +15,10 @@
 
 use crate::generated::{DOMAIN, Method, ROUTES};
 use crate::store::Catalog;
-use grpc_http::error::GatewayError;
-use grpc_http::route::{Resolution, RouteTable};
 use http::{HeaderMap, Method as HttpMethod, StatusCode};
 use std::sync::Arc;
+use transcode::error::Error;
+use transcode::route::{Resolution, RouteTable};
 
 mod artists;
 mod call;
@@ -31,9 +31,9 @@ mod watch;
 pub use call::Call;
 use query::{malformed_path, parse_query};
 
-/// The gateway: a route table, a codec registry, and the service behind it.
+/// The handler: a route table, a codec registry, and the service behind it.
 #[derive(Clone, Debug)]
-pub struct Gateway {
+pub struct Handler {
     routes: RouteTable,
     catalog: Arc<Catalog>,
 }
@@ -49,8 +49,8 @@ pub struct Reply {
     pub body: Vec<u8>,
 }
 
-impl Gateway {
-    /// Builds a gateway over a catalog.
+impl Handler {
+    /// Builds a handler over a catalog.
     #[must_use]
     pub fn new(catalog: Arc<Catalog>) -> Self {
         Self {
@@ -113,15 +113,15 @@ impl Gateway {
                     Err(err) => self.render_error(&err),
                 }
             }
-            Resolution::MethodNotAllowed { allow } => self.render_error(
-                &GatewayError::method_not_allowed(method.as_str(), &allow, DOMAIN),
-            ),
-            Resolution::NotFound => self.render_error(&GatewayError::route_not_found(path, DOMAIN)),
+            Resolution::MethodNotAllowed { allow } => {
+                self.render_error(&Error::method_not_allowed(method.as_str(), &allow, DOMAIN))
+            }
+            Resolution::NotFound => self.render_error(&Error::route_not_found(path, DOMAIN)),
         }
     }
 
     /// Renders an error as an AIP-193 response.
-    fn render_error(&self, err: &GatewayError) -> Reply {
+    fn render_error(&self, err: &Error) -> Reply {
         let body = serde_json::to_vec(&err.to_json())
             .unwrap_or_else(|_| br#"{"error":{"code":500,"status":"INTERNAL"}}"#.to_vec());
 

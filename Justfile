@@ -83,7 +83,7 @@ gen-rust: gen
 # not be possible to commit it in the first place.
 [group('ci')]
 check-gen: gen
-    git diff --exit-code examples/music-rs/src/generated examples/music-go/gateway examples/music-go/gen || \
+    git diff --exit-code examples/music-rs/src/generated examples/music-go/routes examples/music-go/gen || \
         (echo "generated code is stale; run 'just gen'" && exit 1)
 
 [group('rust')]
@@ -108,7 +108,7 @@ fix:
 # Test the Go runtime.
 [group('go')]
 test-go:
-    go -C netadapter test ./...
+    go -C transcode-go test ./...
 
 # Test the Go example end to end: routing, the error envelope, the middleware
 # plane, and both halves of the no-false-2xx rule.
@@ -130,13 +130,13 @@ test-plugin:
 lint-go:
     #!/usr/bin/env bash
     set -euo pipefail
-    unformatted=$(gofmt -l netadapter plugin examples/music-go)
+    unformatted=$(gofmt -l transcode-go plugin examples/music-go)
     if [ -n "$unformatted" ]; then
         echo "gofmt needed:"
         echo "$unformatted"
         exit 1
     fi
-    go -C netadapter vet ./...
+    go -C transcode-go vet ./...
     go vet ./plugin/...
     go -C examples/music-go vet ./...
 

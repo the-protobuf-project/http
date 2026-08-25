@@ -1,13 +1,13 @@
 //! Query-string parsing and the malformed-path error.
 
 use crate::generated::DOMAIN;
-use grpc_http::error::GatewayError;
 use std::collections::HashMap;
+use transcode::error::Error;
 
 /// Builds the `400` for a path segment whose percent-encoding is broken.
-pub(super) fn malformed_path(err: &grpc_http::route::CaptureError, path: &str) -> GatewayError {
-    GatewayError::invalid_fields(
-        vec![grpc_http::error::FieldViolation {
+pub(super) fn malformed_path(err: &transcode::route::CaptureError, path: &str) -> Error {
+    Error::invalid_fields(
+        vec![transcode::error::FieldViolation {
             field: err.field.to_string(),
             description: err.kind.description().to_string(),
             reason: "MALFORMED_PATH".into(),

@@ -13,15 +13,15 @@ import (
 	"time"
 
 	"github.com/the-protobuf-project/http/examples/music-go"
-	"github.com/the-protobuf-project/http/netadapter"
-	"github.com/the-protobuf-project/http/netadapter/apierr"
-	"github.com/the-protobuf-project/http/netadapter/middleware"
-	"github.com/the-protobuf-project/http/netadapter/middleware/builtin"
+	"github.com/the-protobuf-project/http/transcode-go"
+	"github.com/the-protobuf-project/http/transcode-go/apierr"
+	"github.com/the-protobuf-project/http/transcode-go/middleware"
+	"github.com/the-protobuf-project/http/transcode-go/middleware/builtin"
 )
 
 // recorder is an interceptor that records which methods reached it.
 type recorder struct {
-	// mu guards seen, since an adapter may serve concurrently.
+	// mu guards seen, since a handler may serve concurrently.
 	mu sync.Mutex
 
 	// seen holds the fully-qualified names, in arrival order.
@@ -46,13 +46,13 @@ func (r *recorder) names() []string {
 	return append([]string(nil), r.seen...)
 }
 
-// serveWith runs one request against an adapter built with the given options.
-func serveWith(t *testing.T, method, target string, opts ...netadapter.Option) *http.Response {
+// serveWith runs one request against a handler built with the given options.
+func serveWith(t *testing.T, method, target string, opts ...transcode.Option) *http.Response {
 	t.Helper()
 
 	response := httptest.NewRecorder()
-	gateway := music.NewAdapter(music.SeededCatalog(), opts...)
-	gateway.ServeHTTP(response, httptest.NewRequest(method, target, nil))
+	handler := music.NewHandler(music.SeededCatalog(), opts...)
+	handler.ServeHTTP(response, httptest.NewRequest(method, target, nil))
 	return response.Result()
 }
 
@@ -61,9 +61,9 @@ func TestMutatingSelectorFollowsTheAIPPattern(t *testing.T) {
 	// covers every Create, Update, Delete and Undelete — including ones added to
 	// the protos later. A policy written against a name prefix would miss them.
 	seen := &recorder{}
-	gateway := music.NewAdapter(
+	handler := music.NewHandler(
 		music.SeededCatalog(),
-		netadapter.UseFor(seen, middleware.Mutating()),
+		transcode.UseFor(seen, middleware.Mutating()),
 	)
 
 	for _, request := range []struct{ method, target string }{
@@ -73,7 +73,7 @@ func TestMutatingSelectorFollowsTheAIPPattern(t *testing.T) {
 		{http.MethodPost, "/v1/artists/miles/tracks/so-what:withdraw"}, // Custom: mutating
 	} {
 		response := httptest.NewRecorder()
-		gateway.ServeHTTP(response, httptest.NewRequest(request.method, request.target, strings.NewReader("{}")))
+		handler.ServeHTTP(response, httptest.NewRequest(request.method, request.target, strings.NewReader("{}")))
 	}
 
 	got := seen.names()
@@ -108,7 +108,7 @@ func TestAuthRejectionIsAWellFormedChallenge(t *testing.T) {
 	// the RFC 7235 grammar as soon as a message contains a quote — and a message
 	// describing a rejected token very often does.
 	response := serveWith(t, http.MethodGet, "/v1/artists/miles",
-		netadapter.Use(builtin.Bearer(denyAll{}, music.Domain())))
+		transcode.Use(builtin.Bearer(denyAll{}, music.Domain())))
 
 	if response.StatusCode != http.StatusUnauthorized {
 		t.Fatalf("status = %d, want 401", response.StatusCode)
@@ -135,7 +135,7 @@ func TestRateLimitCarriesRetryAfter(t *testing.T) {
 	// with nothing better to do than retry immediately, which is the behaviour
 	// the limit exists to stop.
 	response := serveWith(t, http.MethodGet, "/v1/artists/miles",
-		netadapter.Use(builtin.NewRateLimit(overQuota{}, music.Domain())))
+		transcode.Use(builtin.NewRateLimit(overQuota{}, music.Domain())))
 
 	if response.StatusCode != http.StatusTooManyRequests {
 		t.Fatalf("status = %d, want 429", response.StatusCode)
@@ -150,9 +150,9 @@ func TestCORSAllowsOnlyListedOrigins(t *testing.T) {
 	request.Header.Set("Origin", "https://elsewhere.example")
 
 	response := httptest.NewRecorder()
-	music.NewAdapter(
+	music.NewHandler(
 		music.SeededCatalog(),
-		netadapter.Use(builtin.AllowOrigins("https://console.example")),
+		transcode.Use(builtin.AllowOrigins("https://console.example")),
 	).ServeHTTP(response, request)
 
 	// Not an allowed origin: the headers are omitted rather than the request
@@ -170,7 +170,7 @@ func TestHealthAnswersBeforeRouting(t *testing.T) {
 	// A health check must keep working when the route table cannot serve
 	// anything else, which is precisely when a health check matters.
 	health := builtin.Healthz()
-	handler := health.Wrap(music.NewAdapter(music.SeededCatalog()))
+	handler := health.Wrap(music.NewHandler(music.SeededCatalog()))
 
 	response := httptest.NewRecorder()
 	handler.ServeHTTP(response, httptest.NewRequest(http.MethodGet, "/healthz", nil))

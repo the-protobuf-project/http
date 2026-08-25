@@ -1,6 +1,6 @@
 package music
 
-// store.go is an in-memory catalog standing in for the gRPC service the adapter
+// store.go is an in-memory catalog standing in for the gRPC service the transcoder
 // would normally call.
 //
 // Deliberately a plain synchronous store behind a mutex: the point of the
@@ -8,7 +8,7 @@ package music
 // that surface is correct.
 //
 // Errors are the same *apierr.Error a real service's status maps to, so the
-// adapter's status projection is exercised rather than simulated.
+// transcoder's status projection is exercised rather than simulated.
 
 import (
 	"fmt"
@@ -17,9 +17,9 @@ import (
 	"sync"
 	"time"
 
-	"github.com/the-protobuf-project/http/examples/music-go/gateway"
 	"github.com/the-protobuf-project/http/examples/music-go/gen/music/v1"
-	"github.com/the-protobuf-project/http/netadapter/apierr"
+	"github.com/the-protobuf-project/http/examples/music-go/routes"
+	"github.com/the-protobuf-project/http/transcode-go/apierr"
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/durationpb"
 	"google.golang.org/protobuf/types/known/timestamppb"
@@ -153,7 +153,7 @@ func parentOf(name string) string {
 // resource was missing without parsing prose.
 func notFound(resourceType, name string) *apierr.Error {
 	return apierr.New(apierr.NotFound, fmt.Sprintf("%s %q not found.", resourceType, name)).
-		WithErrorInfo("RESOURCE_MISSING", gateway.Domain, map[string]string{"resource": name}).
+		WithErrorInfo("RESOURCE_MISSING", routes.Domain, map[string]string{"resource": name}).
 		WithDetail(apierr.ResourceInfo{
 			ResourceType: "music.example.com/" + resourceType,
 			ResourceName: name,
@@ -165,5 +165,5 @@ func notFound(resourceType, name string) *apierr.Error {
 // one.
 func alreadyExists(resourceType, name string) *apierr.Error {
 	return apierr.New(apierr.AlreadyExists, fmt.Sprintf("%s %q already exists.", resourceType, name)).
-		WithErrorInfo("RESOURCE_EXISTS", gateway.Domain, map[string]string{"resource": name})
+		WithErrorInfo("RESOURCE_EXISTS", routes.Domain, map[string]string{"resource": name})
 }

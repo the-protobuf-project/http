@@ -15,7 +15,7 @@
 //	      - lang=rust
 //	      - domain=music.example.com
 //
-// lang=go emits the same table in Go, against the http-go runtime. Both are
+// lang=go emits the same table in Go, against the transcode-go runtime. Both are
 // built from one view of the IR, so the two cannot describe different APIs.
 package main
 
@@ -26,7 +26,7 @@ import (
 	"runtime/debug"
 	"strings"
 
-	"github.com/the-protobuf-project/http/plugin/gateway"
+	"github.com/the-protobuf-project/http/plugin/ir"
 	"github.com/the-protobuf-project/http/plugin/target"
 	"github.com/the-protobuf-project/protokit/factory"
 	"github.com/the-protobuf-project/protokit/header"
@@ -103,7 +103,7 @@ func main() {
 		header.SetTool("protoc-gen-http")
 		header.SetProject(projectCredit())
 
-		source := gateway.ProtoSource{
+		source := ir.ProtoSource{
 			Domain:  *domain,
 			Strict:  *strict,
 			Version: resolveVersion(),

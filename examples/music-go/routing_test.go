@@ -83,7 +83,7 @@ func TestUndecodableCaptureIsFourHundredNotFourOhFour(t *testing.T) {
 	// fix their encoding.
 	//
 	// The sibling case — a syntactically malformed escape like %zz — never
-	// reaches the adapter on this runtime: net/http rejects the request line
+	// reaches the transcoder on this runtime: net/http rejects the request line
 	// itself and answers with its own plain-text 400. The status is right and
 	// the body is not an AIP-193 envelope, which is a divergence from the Rust
 	// runtime that no handler can close. See the runtime README.
@@ -152,7 +152,7 @@ func TestUnknownQueryParameterIsRejected(t *testing.T) {
 	}
 }
 
-func TestDomainIsStampedOnGatewayErrors(t *testing.T) {
+func TestDomainIsStampedOnTranscoderErrors(t *testing.T) {
 	if music.Domain() != "music.example.com" {
 		t.Fatalf("domain = %q, want the one the protos were generated with", music.Domain())
 	}

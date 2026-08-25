@@ -3,13 +3,13 @@
 //! System `curl` on macOS has no HTTP/3 support, so this drives a real `h3`
 //! client over QUIC against the real listener. The assertion that matters is
 //! the last one: both transports return byte-identical bodies, because both
-//! ran the same `Gateway::serve`.
+//! ran the same `Handler::serve`.
 
 #![cfg(feature = "http3")]
 #![allow(clippy::unwrap_used, clippy::expect_used)]
 
 use bytes::Buf;
-use music_example::handler::Gateway;
+use music_example::handler::Handler;
 use music_example::{serve, store::Catalog};
 use std::net::SocketAddr;
 use std::sync::Arc;
@@ -64,7 +64,7 @@ impl rustls::client::danger::ServerCertVerifier for TrustOne {
 async fn http3_and_http1_return_identical_bodies() {
     let _ = rustls::crypto::ring::default_provider().install_default();
 
-    let gateway = Gateway::new(Arc::new(Catalog::seeded()));
+    let handler = Handler::new(Arc::new(Catalog::seeded()));
     let cert = serve::cert::generate().expect("certificate");
 
     // Port 0 lets the OS choose, so the test does not collide with a running
@@ -92,7 +92,7 @@ async fn http3_and_http1_return_identical_bodies() {
     let quic_port = endpoint.local_addr().unwrap().port();
     drop(endpoint);
 
-    let h3_gateway = gateway.clone();
+    let h3_gateway = handler.clone();
     let h3_tls =
         serve::tls::server_config(cert.certs.clone(), cert.key.clone_key(), &[b"h3"]).unwrap();
     tokio::spawn(async move {
@@ -101,7 +101,7 @@ async fn http3_and_http1_return_identical_bodies() {
     });
     tokio::spawn(async move {
         let addr: SocketAddr = format!("127.0.0.1:{tcp_port}").parse().unwrap();
-        let _ = serve::tls::serve(gateway, addr, tcp_tls).await;
+        let _ = serve::tls::serve(handler, addr, tcp_tls).await;
     });
     tokio::time::sleep(std::time::Duration::from_millis(300)).await;
 

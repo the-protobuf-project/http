@@ -3,10 +3,10 @@
 use super::{Call, Reply};
 use crate::generated::DOMAIN;
 use bytes::BytesMut;
-use grpc_http::codec::{Encode, JsonCodec};
-use grpc_http::error::GatewayError;
 use http::{HeaderMap, HeaderValue, StatusCode};
 use serde::Serialize;
+use transcode::codec::{Encode, JsonCodec};
+use transcode::error::Error;
 
 impl Call<'_> {
     /// Encodes a `200` response.
@@ -15,7 +15,7 @@ impl Call<'_> {
     ///
     /// `500` when the message cannot be encoded, which is a service bug rather
     /// than anything the caller did.
-    pub fn ok<M: Serialize>(&self, message: &M) -> Result<Reply, Box<GatewayError>> {
+    pub fn ok<M: Serialize>(&self, message: &M) -> Result<Reply, Box<Error>> {
         self.reply(message, StatusCode::OK, None)
     }
 
@@ -24,11 +24,7 @@ impl Call<'_> {
     /// # Errors
     ///
     /// As [`Call::ok`].
-    pub fn created<M: Serialize>(
-        &self,
-        message: &M,
-        location: &str,
-    ) -> Result<Reply, Box<GatewayError>> {
+    pub fn created<M: Serialize>(&self, message: &M, location: &str) -> Result<Reply, Box<Error>> {
         self.reply(message, StatusCode::CREATED, Some(location))
     }
 
@@ -38,7 +34,7 @@ impl Call<'_> {
         message: &M,
         status: StatusCode,
         location: Option<&str>,
-    ) -> Result<Reply, Box<GatewayError>> {
+    ) -> Result<Reply, Box<Error>> {
         let mut buf = BytesMut::new();
         JsonCodec::new()
             .encode(message, &mut buf)

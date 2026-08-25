@@ -1,4 +1,4 @@
-//! A music catalog served over HTTP by `grpc-http`.
+//! A music catalog served over HTTP by `transcode`.
 //!
 //! This is the project's proof of concept. It proves three things the design
 //! claims but had not yet demonstrated:

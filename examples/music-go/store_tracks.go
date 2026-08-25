@@ -6,9 +6,9 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/the-protobuf-project/http/examples/music-go/gateway"
 	"github.com/the-protobuf-project/http/examples/music-go/gen/music/v1"
-	"github.com/the-protobuf-project/http/netadapter/apierr"
+	"github.com/the-protobuf-project/http/examples/music-go/routes"
+	"github.com/the-protobuf-project/http/transcode-go/apierr"
 )
 
 // GetTrack returns one track. (AIP-131)
@@ -137,7 +137,7 @@ func (c *Catalog) WithdrawTrack(name string) (*musicv1.Track, error) {
 	if track.Availability == musicv1.Availability_AVAILABILITY_UNAVAILABLE {
 		return nil, apierr.New(apierr.FailedPrecondition,
 			fmt.Sprintf("Track %q is already withdrawn.", name)).
-			WithErrorInfo("ALREADY_WITHDRAWN", gateway.Domain, map[string]string{"resource": name})
+			WithErrorInfo("ALREADY_WITHDRAWN", routes.Domain, map[string]string{"resource": name})
 	}
 
 	// The proto has no WITHDRAWN value: a withdrawn track is one that is no

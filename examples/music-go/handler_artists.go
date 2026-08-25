@@ -10,11 +10,11 @@ import (
 	"strings"
 
 	"github.com/the-protobuf-project/http/examples/music-go/gen/music/v1"
-	"github.com/the-protobuf-project/http/netadapter"
+	"github.com/the-protobuf-project/http/transcode-go"
 )
 
 // getArtist serves GET /v1/{name=artists/*}.
-func (s *Service) getArtist(call *netadapter.Call) (*netadapter.Reply, error) {
+func (s *Service) getArtist(call *transcode.Call) (*transcode.Reply, error) {
 	name, err := call.Capture("name")
 	if err != nil {
 		return nil, err
@@ -27,7 +27,7 @@ func (s *Service) getArtist(call *netadapter.Call) (*netadapter.Reply, error) {
 }
 
 // listArtists serves GET /v1/artists.
-func (s *Service) listArtists(call *netadapter.Call) (*netadapter.Reply, error) {
+func (s *Service) listArtists(call *transcode.Call) (*transcode.Reply, error) {
 	if err := call.RejectUnknownQuery("pageSize", "pageToken"); err != nil {
 		return nil, err
 	}
@@ -44,7 +44,7 @@ func (s *Service) listArtists(call *netadapter.Call) (*netadapter.Reply, error) 
 }
 
 // createArtist serves POST /v1/artists with body: "artist".
-func (s *Service) createArtist(call *netadapter.Call) (*netadapter.Reply, error) {
+func (s *Service) createArtist(call *transcode.Call) (*transcode.Reply, error) {
 	artist := &musicv1.Artist{}
 	if err := decode(call, artist); err != nil {
 		return nil, err
@@ -61,7 +61,7 @@ func (s *Service) createArtist(call *netadapter.Call) (*netadapter.Reply, error)
 }
 
 // updateArtist serves PATCH /v1/{artist.name=artists/*} with body: "artist".
-func (s *Service) updateArtist(call *netadapter.Call) (*netadapter.Reply, error) {
+func (s *Service) updateArtist(call *transcode.Call) (*transcode.Reply, error) {
 	name, err := call.Capture("artist.name")
 	if err != nil {
 		return nil, err
@@ -85,7 +85,7 @@ func (s *Service) updateArtist(call *netadapter.Call) (*netadapter.Reply, error)
 //
 // AIP-135's force decides whether child tracks go with it; without it, an artist
 // that still has tracks is a FAILED_PRECONDITION rather than a silent cascade.
-func (s *Service) deleteArtist(call *netadapter.Call) (*netadapter.Reply, error) {
+func (s *Service) deleteArtist(call *transcode.Call) (*transcode.Reply, error) {
 	name, err := call.Capture("name")
 	if err != nil {
 		return nil, err

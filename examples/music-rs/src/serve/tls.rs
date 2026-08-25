@@ -5,7 +5,7 @@
 //! 1.2 reachable is where downgrade attacks live.
 
 use super::handle;
-use crate::handler::Gateway;
+use crate::handler::Handler;
 use hyper::server::conn::http1;
 use hyper::service::service_fn;
 use hyper_util::rt::TokioIo;
@@ -47,7 +47,7 @@ pub fn server_config(
 /// Fails if the address cannot be bound. A failed handshake closes that one
 /// connection and is logged; the listener keeps serving.
 pub async fn serve(
-    gateway: Gateway,
+    handler: Handler,
     addr: SocketAddr,
     config: ServerConfig,
 ) -> std::io::Result<()> {
@@ -55,11 +55,11 @@ pub async fn serve(
     let acceptor = TlsAcceptor::from(Arc::new(config));
     tracing::info!(%addr, "http/1.1 listening (tls 1.3)");
 
-    let gateway = Arc::new(gateway);
+    let handler = Arc::new(handler);
     loop {
         let (stream, peer) = listener.accept().await?;
         let acceptor = acceptor.clone();
-        let gateway = Arc::clone(&gateway);
+        let handler = Arc::clone(&handler);
 
         tokio::spawn(async move {
             let stream = match acceptor.accept(stream).await {
@@ -72,8 +72,8 @@ pub async fn serve(
 
             let io = TokioIo::new(stream);
             let service = service_fn(move |req| {
-                let gateway = Arc::clone(&gateway);
-                async move { Ok::<_, std::convert::Infallible>(handle(&gateway, req).await) }
+                let handler = Arc::clone(&handler);
+                async move { Ok::<_, std::convert::Infallible>(handle(&handler, req).await) }
             });
 
             if let Err(err) = http1::Builder::new().serve_connection(io, service).await {

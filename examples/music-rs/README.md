@@ -1,7 +1,7 @@
 # music-example
 
 The proof of concept: a music catalog served over HTTP/1.1 and HTTP/3 by
-[`grpc-http`](../../http-rs/grpc-http), from the AIP-annotated protos in
+[`transcode`](../../transcode-rs/transcode), from the AIP-annotated protos in
 [`examples/protobuf`](../protobuf).
 
 ## Run it

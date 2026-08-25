@@ -8,13 +8,18 @@
 //!   https://127.0.0.1:8443  HTTP/3 over QUIC, TLS 1.3   (UDP)
 //! ```
 //!
+//! `MUSIC_HTTP_ADDR` and `MUSIC_TLS_ADDR` override the listeners. The
+//! conformance script sets them so this server and the Go one can run at once
+//! and be asked the same questions — which is the only way to check that two
+//! runtimes generated from one IR actually answer alike.
+//!
 //! The TLS listeners share a self-signed certificate generated at startup, so
 //! a client needs `--insecure` or the printed PEM to connect.
 //!
-//! All three serve the same [`Gateway`] value. That is the demonstration: the
+//! All three serve the same [`Handler`] value. That is the demonstration: the
 //! handler is written once and is unaware of which transport reached it.
 
-use music_example::handler::Gateway;
+use music_example::handler::Handler;
 use music_example::serve;
 use music_example::store::Catalog;
 use std::net::SocketAddr;
@@ -28,10 +33,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
         .map_err(|_| "failed to install the rustls crypto provider")?;
 
     let catalog = Arc::new(Catalog::seeded());
-    let gateway = Gateway::new(catalog);
+    let handler = Handler::new(catalog);
 
-    let plain: SocketAddr = "127.0.0.1:8080".parse()?;
-    let secure: SocketAddr = "127.0.0.1:8443".parse()?;
+    let plain: SocketAddr = addr_from_env("MUSIC_HTTP_ADDR", "127.0.0.1:8080")?;
+    let secure: SocketAddr = addr_from_env("MUSIC_TLS_ADDR", "127.0.0.1:8443")?;
 
     let cert = serve::cert::generate()?;
     println!("{}", banner(&cert.cert_pem, plain, secure));
@@ -43,16 +48,16 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
     let quic_tls = serve::tls::server_config(cert.certs, cert.key, &[b"h3"])?;
 
     let mut tasks = tokio::task::JoinSet::new();
-    tasks.spawn(serve::http1::serve(gateway.clone(), plain));
+    tasks.spawn(serve::http1::serve(handler.clone(), plain));
     {
-        let gateway = gateway.clone();
-        tasks.spawn(async move { serve::tls::serve(gateway, secure, tcp_tls).await });
+        let handler = handler.clone();
+        tasks.spawn(async move { serve::tls::serve(handler, secure, tcp_tls).await });
     }
     #[cfg(feature = "http3")]
     {
-        let gateway = gateway.clone();
+        let handler = handler.clone();
         tokio::spawn(async move {
-            if let Err(err) = serve::http3::serve(gateway, secure, quic_tls).await {
+            if let Err(err) = serve::http3::serve(handler, secure, quic_tls).await {
                 tracing::error!(?err, "http/3 listener stopped");
             }
         });
@@ -64,6 +69,20 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
     println!("\nshutting down");
     tasks.shutdown().await;
     Ok(())
+}
+
+/// Reads a listen address from the environment, falling back to a default.
+///
+/// A malformed value is an error rather than a silent fallback: a server that
+/// quietly ignores the address it was told to use is one that looks up and
+/// finds the wrong process listening.
+fn addr_from_env(
+    key: &str,
+    fallback: &str,
+) -> Result<SocketAddr, Box<dyn std::error::Error + Send + Sync>> {
+    let raw = std::env::var(key).unwrap_or_else(|_| fallback.to_string());
+    raw.parse()
+        .map_err(|err| format!("{key}={raw:?} is not a socket address: {err}").into())
 }
 
 /// The startup banner, listing what is reachable where.

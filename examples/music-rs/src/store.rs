@@ -1,12 +1,12 @@
 //! An in-memory catalog.
 //!
-//! Stands in for the gRPC service the gateway would normally call. It is
+//! Stands in for the gRPC service the handler would normally call. It is
 //! deliberately a plain synchronous store behind a mutex: the point of the
 //! proof of concept is the HTTP surface, and a real backend would only obscure
 //! whether that surface is correct.
 //!
 //! Errors are `tonic::Status`, exactly as a real service returns, so the
-//! gateway's error mapping is exercised for real rather than simulated.
+//! handler's error mapping is exercised for real rather than simulated.
 
 use crate::model::{Artist, Track};
 use std::collections::BTreeMap;

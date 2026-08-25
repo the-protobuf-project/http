@@ -1,7 +1,7 @@
 # music-go
 
 The Go proof of concept: the same catalog `music-rs` serves, over the route
-table `protoc-gen-http` emitted for the [`netadapter`](../../netadapter) runtime
+table `protoc-gen-http` emitted for the [`transcode`](../../transcode-go) runtime
 from the same protos.
 
 ```sh
@@ -12,7 +12,7 @@ curl http://127.0.0.1:8080/v1/artists/miles/tracks/so-what
 Nothing here is hand-written that a generator can produce. `protoc-gen-go` emits
 the messages into `gen/` and `protojson` marshals them, so the JSON mapping is
 the protobuf runtime's rather than a set of struct tags that resemble it;
-`protoc-gen-http` emits the route table into `gateway/`. What is left is the
+`protoc-gen-http` emits the route table into `routes/`. What is left is the
 service — an in-memory catalog — and the handlers that bind a call to it, which
 is the shape the Go target will emit once it generates handlers too.
 

@@ -20,9 +20,9 @@ import (
 	"time"
 
 	"github.com/the-protobuf-project/http/examples/music-go"
-	"github.com/the-protobuf-project/http/netadapter"
-	"github.com/the-protobuf-project/http/netadapter/middleware"
-	"github.com/the-protobuf-project/http/netadapter/middleware/builtin"
+	"github.com/the-protobuf-project/http/transcode-go"
+	"github.com/the-protobuf-project/http/transcode-go/middleware"
+	"github.com/the-protobuf-project/http/transcode-go/middleware/builtin"
 )
 
 // shutdownGrace is how long in-flight requests have to finish on a signal.
@@ -35,18 +35,18 @@ func main() {
 	logger := slog.New(slog.NewTextHandler(os.Stderr, &slog.HandlerOptions{Level: slog.LevelInfo}))
 	health := builtin.Healthz()
 
-	gateway := music.NewAdapter(
+	handler := music.NewHandler(
 		music.SeededCatalog(),
-		netadapter.WithLogger(logger),
+		transcode.WithLogger(logger),
 		// Every policy below is selected by what a method means rather than by
 		// what it is called, so a method added to the protos lands in the right
 		// buckets without this list being touched.
-		netadapter.Use(builtin.NewRecovery(logger)),
-		netadapter.Use(builtin.NewLogging(logger)),
-		netadapter.Use(builtin.NewDeadline(30*time.Second, music.Domain())),
-		netadapter.Use(builtin.Direct()),
-		netadapter.Use(builtin.PermissiveCORS()),
-		netadapter.UseFor(
+		transcode.Use(builtin.NewRecovery(logger)),
+		transcode.Use(builtin.NewLogging(logger)),
+		transcode.Use(builtin.NewDeadline(30*time.Second, music.Domain())),
+		transcode.Use(builtin.Direct()),
+		transcode.Use(builtin.PermissiveCORS()),
+		transcode.UseFor(
 			builtin.NewIdempotency(music.NewRequestIDs(), logger),
 			middleware.Mutating(),
 		),
@@ -54,7 +54,7 @@ func main() {
 
 	server := &http.Server{
 		Addr:              *addr,
-		Handler:           health.Wrap(gateway),
+		Handler:           health.Wrap(handler),
 		ReadHeaderTimeout: 10 * time.Second,
 	}
 

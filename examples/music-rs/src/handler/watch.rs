@@ -10,9 +10,9 @@ use crate::generated::DOMAIN;
 use crate::model::Track;
 use crate::requests::WatchTracksResponse;
 use bytes::BytesMut;
-use grpc_http::codec::{Encode, Framing, JsonCodec};
-use grpc_http::error::GatewayError;
-use grpc_http::stream::{StreamWriter, Termination};
+use transcode::codec::{Encode, Framing, JsonCodec};
+use transcode::error::Error;
+use transcode::stream::{StreamWriter, Termination};
 
 /// `GET /v1/{parent=artists/*}/tracks:watch`
 ///
@@ -20,7 +20,7 @@ use grpc_http::stream::{StreamWriter, Termination};
 /// connection open, which is enough to exercise the contract: what matters is
 /// which [`Termination`] comes out, and that is decided by whether a message
 /// was written before the failure.
-pub(super) fn watch(call: &Call<'_>) -> Result<Reply, Box<GatewayError>> {
+pub(super) fn watch(call: &Call<'_>) -> Result<Reply, Box<Error>> {
     let parent = call.capture("parent")?;
 
     // Resolving the parent *before* the first message is deliberate. It is what
@@ -61,8 +61,8 @@ pub(super) fn watch(call: &Call<'_>) -> Result<Reply, Box<GatewayError>> {
 fn finish_failed(
     mut writer: StreamWriter,
     mut body: Vec<u8>,
-    err: Box<GatewayError>,
-) -> Result<Reply, Box<GatewayError>> {
+    err: Box<Error>,
+) -> Result<Reply, Box<Error>> {
     match writer.fail(err, |e| {
         serde_json::to_vec(&e.to_json()).unwrap_or_default()
     }) {
@@ -85,7 +85,7 @@ fn finish_failed(
             // would carry it out of band rather than on the wire.
             reply
                 .headers
-                .insert("x-gateway-truncate", http::HeaderValue::from_static("1"));
+                .insert("x-handler-truncate", http::HeaderValue::from_static("1"));
             Ok(reply)
         }
         other => unreachable!("fail produced {other:?}"),
@@ -122,7 +122,7 @@ const fn content_type(framing: Framing) -> &'static str {
 }
 
 /// Encodes one streamed message.
-fn encode_track(track: &Track) -> Result<Vec<u8>, Box<GatewayError>> {
+fn encode_track(track: &Track) -> Result<Vec<u8>, Box<Error>> {
     let mut buf = BytesMut::new();
     JsonCodec::new()
         .encode(

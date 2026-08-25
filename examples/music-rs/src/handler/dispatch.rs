@@ -6,7 +6,7 @@
 
 use super::{Call, Reply, artists, tracks};
 use crate::generated::Method;
-use grpc_http::error::GatewayError;
+use transcode::error::Error;
 
 /// Routes a resolved call to its handler.
 ///
@@ -14,7 +14,7 @@ use grpc_http::error::GatewayError;
 ///
 /// Whatever the handler returns, plus `UNIMPLEMENTED` for the streaming method,
 /// which the runtime does not serve yet.
-pub(super) fn dispatch(call: &Call<'_>) -> Result<Reply, Box<GatewayError>> {
+pub(super) fn dispatch(call: &Call<'_>) -> Result<Reply, Box<Error>> {
     match call.method {
         Method::GetArtist => artists::get(call),
         Method::ListArtists => artists::list(call),

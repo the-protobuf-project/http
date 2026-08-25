@@ -13,6 +13,6 @@ go 1.26.4
 // published its service package.
 use (
 	./examples/music-go
-	./netadapter
 	./plugin
+	./transcode-go
 )
