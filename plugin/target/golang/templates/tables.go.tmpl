@@ -1,0 +1,64 @@
+{{ .Banner }}
+// Package {{ .Package }} is the generated route table for this API.
+//
+// Two properties the generator guarantees, both load-bearing:
+//
+//   - The table is sorted most-specific-first, so a linear scan is correct.
+//   - No two routes are ambiguous, checked at build time. An API that cannot be
+//     routed unambiguously fails to generate rather than resolving by
+//     registration order at request time.
+package {{ .Package }}
+
+import (
+	"github.com/the-protobuf-project/http/transcode-go/codec"
+	"github.com/the-protobuf-project/http/transcode-go/route"
+)
+
+// Domain is the API's error domain, stamped into every AIP-193 ErrorInfo.
+const Domain = {{ printf "%q" .Domain }}
+
+// The handler index of every method of every service.
+//
+// One numbering across all services because the route table is one table: a
+// request is matched before anything knows which service will serve it.
+const (
+{{- range .Methods }}
+	// {{ .Const }} is `{{ .Doc }}`.
+	{{ .Const }} = {{ .Index }}
+{{- end }}
+)
+
+// Methods is the method table, in handler-index order.
+//
+// A matched route resolves to one of these, which is what a runtime reports in
+// a tracing span and what a middleware selector dispatches on.
+var Methods = []route.Method{
+{{- range .Methods }}
+	{
+		Name:         {{ printf "%q" .Name }},
+		FullName:     {{ printf "%q" .FullName }},
+		Service:      {{ printf "%q" .Service }},
+		Pattern:      route.{{ .Pattern }},
+		Mutating:     {{ .Mutating }},
+		ServerStream: {{ .ServerStream }},
+	},
+{{- end }}
+}
+
+// Codecs is the codec registry this gateway was generated with, default first.
+var Codecs = []codec.Entry{
+{{- range .Codecs }}
+	{
+		Name:       {{ printf "%q" .Name }},
+		MediaTypes: []string{ {{- range $i, $m := .MediaTypes }}{{ if $i }}, {{ end }}{{ printf "%q" $m }}{{ end -}} },
+		Framing:    codec.{{ .Framing }},
+		Index:      {{ .Index }},
+	},
+{{- end }}
+}
+
+// NewTable returns the route table, ready to resolve requests against.
+func NewTable() *route.Table { return route.NewTable(Routes, Methods) }
+
+// NewRegistry returns the codec registry.
+func NewRegistry() *codec.Registry { return codec.NewRegistry(Codecs) }

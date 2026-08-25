@@ -21,6 +21,40 @@ env:
   CARGO_TERM_COLOR: always
 
 jobs:
+  gitignore:
+    # Fails on an unanchored directory rule in .gitignore.
+    #
+    # `target/` without a leading slash matches a directory of that name at
+    # *any* depth. Cargo's build output is at the repository root, but the
+    # generator's emitters live in plugin/target/ — so one rule meant for the
+    # former silently swallowed the latter, and a clean checkout could not build
+    # the plugin at all. The files were never committed, so nothing in a diff
+    # showed it; the first symptom was CI failing on a fresh clone.
+    #
+    # Checking the committed tree for untracked files would not catch this:
+    # `actions/checkout` writes only tracked files, so that check can never
+    # fail. This lints the rule that caused it instead, which can.
+    name: .gitignore is anchored
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - name: No unanchored directory rules
+        run: |
+          set -euo pipefail
+
+          # A directory rule is unanchored when it ends in "/" and contains no
+          # "/" before that — "build/" matches at any depth, "/build/" and
+          # "a/b/" match one place. Wildcards are left alone: "**/foo/" is
+          # already explicit about matching at depth.
+          unanchored="$(grep -nE '^[^#/*][^/]*/$' .gitignore || true)"
+          if [ -n "$unanchored" ]; then
+            echo "::error::Unanchored directory rules match at any depth."
+            echo "Anchor with a leading slash, or use ** to say you meant it:"
+            echo "$unanchored"
+            exit 1
+          fi
+          echo ".gitignore rules are anchored"
+
   protos:
     # The protos are the input to everything else, and both linters run because
     # they check different things: buf covers style and wire-compatibility

@@ -892,6 +892,21 @@ requires and `scripts/conformance.sh` for what is asserted.
 | `release.yaml` | a `v*` tag | re-verifies against the tag, cross-compiles `protoc-gen-http` for five platforms, publishes a release with checksums and generated notes |
 | `dependabot-auto-merge.yaml` | Dependabot pull requests | enables GitHub auto-merge for patch and minor bumps; majors get a comment explaining why they were left |
 
+Pushing a semver tag is the whole release procedure:
+
+```sh
+git tag v0.2.0 && git push origin v0.2.0
+```
+
+That fires `release.yaml`, which re-runs the tests and the conformance check
+*against the tag* before publishing — CI having been green on the commit is not
+the same claim, and a release should not assume nothing moved in between.
+
+One caveat worth knowing: a tag pushed by a workflow using `GITHUB_TOKEN` does
+not trigger other workflows, by design, so GitHub cannot loop. Tags pushed by a
+person do. If tagging is ever automated, it will need a PAT or a GitHub App
+token for the release to fire.
+
 The release workflow pins every action by commit SHA, because a tag is mutable
 and that job signs and publishes. CI pins by tag, where a compromised action
 costs a red build rather than a release.

@@ -1,0 +1,15 @@
+{{ .Banner }}
+//! The flattened match sequences each route walks.
+//!
+//! Shared between routes because several bindings differ only in HTTP method:
+//! `GET`, `PATCH`, and `DELETE` on one resource all walk the same path.
+
+use transcode::route::Match;
+{{ range .Matches }}
+/// `{{ .Doc }}`
+pub(crate) static {{ .Ident }}: &[Match] = &[
+{{- range .Segments }}
+    {{ . }},
+{{- end }}
+];
+{{ end }}

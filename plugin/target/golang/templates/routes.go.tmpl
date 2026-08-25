@@ -1,0 +1,22 @@
+{{ .Banner }}
+package {{ .Package }}
+
+import "github.com/the-protobuf-project/http/transcode-go/route"
+
+// Routes is every binding this API declares, most specific first.
+//
+// The order is not incidental. The generator sorts by the precedence rules in
+// README §1.4 and fails the build on any pair that overlaps without one
+// dominating, so the runtime can scan linearly and take the first match.
+var Routes = []route.Route{
+{{- range .Routes }}
+	{
+		Method:   {{ printf "%q" .HTTPMethod }},
+		Segments: {{ .MatchIdent }},
+		Verb:     {{ printf "%q" .Verb }},
+		Captures: {{ .CaptureIdent }},
+		Template: {{ printf "%q" .Template }},
+		Handler:  {{ .Handler }},
+	},
+{{- end }}
+}

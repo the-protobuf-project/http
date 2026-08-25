@@ -1,0 +1,50 @@
+{{ .Banner }}
+//! The route table, emitted most-specific-first.
+//!
+//! Order is not incidental. The generator sorts by the precedence rules in
+//! `PROTOCOL.md` §3.4 and fails the build on any pair that overlaps without one
+//! dominating, so the runtime can scan linearly and take the first match.
+
+use super::{
+    Method, NONE,
+{{- range .Captures }}
+    {{ .Ident }},
+{{- end }}
+{{- range .Matches }}
+    {{ .Ident }},
+{{- end }}
+};
+use transcode::route::{Capture, Match, Route};
+
+/// Builds one route, keeping the table below readable.
+const fn route(
+    method: &'static str,
+    segments: &'static [Match],
+    verb: &'static str,
+    captures: &'static [Capture],
+    template: &'static str,
+    handler: Method,
+) -> Route {
+    Route {
+        method,
+        segments,
+        verb,
+        captures,
+        template,
+        handler: handler as usize,
+    }
+}
+
+/// Every binding this API declares, most specific first.
+pub static ROUTES: &[Route] = &[
+{{- range .Routes }}
+    route(
+        {{ printf "%q" .HTTPMethod }},
+        {{ .MatchIdent }},
+        {{ printf "%q" .Verb }},
+        {{ .CaptureIdent }},
+        {{ printf "%q" .Template }},
+        Method::{{ .Variant }},
+    ),
+{{- end }}
+];

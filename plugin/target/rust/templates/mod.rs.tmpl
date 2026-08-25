@@ -1,0 +1,127 @@
+{{ .Banner }}
+//! The generated route table for this API.
+//!
+//! Two properties the generator guarantees, both load-bearing:
+//!
+//! - **The table is sorted most-specific-first**, so a linear scan is correct.
+//! - **No two routes are ambiguous**, checked at build time. An API that cannot
+//!   be routed unambiguously fails to generate rather than resolving by
+//!   registration order at request time.
+
+use transcode::codec::{CodecEntry, Framing};
+use transcode::route::Capture;
+
+mod matches;
+mod routes;
+
+pub(crate) use matches::{ {{- range $i, $m := .Matches }}{{ if $i }}, {{ end }}{{ $m.Ident }}{{ end -}} };
+pub use routes::ROUTES;
+
+/// Every method of every service, in handler-index order.
+///
+/// One enum across all services because the route table is one table: a request
+/// is matched before anything knows which service will serve it.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[repr(usize)]
+pub enum Method {
+{{- range .Methods }}
+    /// `{{ .Doc }}`
+    {{ .Variant }} = {{ .Index }},
+{{- end }}
+}
+
+impl Method {
+    /// Recovers the method from a matched route's handler index.
+    ///
+    /// # Panics
+    ///
+    /// Panics on an index the generator did not emit, which would mean the
+    /// table and this enum disagree — a generator bug, not a runtime one.
+    #[must_use]
+    pub fn from_handler(index: usize) -> Self {
+        const ALL: [Method; {{ len .Methods }}] = [
+{{- range .Methods }}
+            Method::{{ .Variant }},
+{{- end }}
+        ];
+        ALL[index]
+    }
+
+    /// The fully-qualified proto method name, for tracing and error metadata.
+    #[must_use]
+    pub const fn full_name(self) -> &'static str {
+        match self {
+{{- range .Methods }}
+            Method::{{ .Variant }} => {{ printf "%q" .FullName }},
+{{- end }}
+        }
+    }
+
+    /// The service this method belongs to.
+    #[must_use]
+    pub const fn service(self) -> &'static str {
+        match self {
+{{- range .Methods }}
+            Method::{{ .Variant }} => {{ printf "%q" .Service }},
+{{- end }}
+        }
+    }
+
+    /// Whether the method changes state, derived from its AIP pattern.
+    ///
+    /// This is what a `Selector::Mutating` policy dispatches on, so a method
+    /// added later is covered without the policy being touched.
+    #[must_use]
+    pub const fn is_mutating(self) -> bool {
+        match self {
+{{- range .Methods }}
+            Method::{{ .Variant }} => {{ .Mutating }},
+{{- end }}
+        }
+    }
+
+    /// Whether the method streams its response.
+    ///
+    /// Decides whether the status line may be written when the response opens,
+    /// and whether a streaming-only codec such as SSE is a legal choice for it.
+    ///
+    /// There is no client-stream counterpart: the service IR rejects a
+    /// `google.api.http` rule on a client-streaming method outright, because
+    /// HTTP has no honest mapping for one.
+    #[must_use]
+    pub const fn is_streaming(self) -> bool {
+        match self {
+{{- range .Methods }}
+            Method::{{ .Variant }} => {{ .ServerStream }},
+{{- end }}
+        }
+    }
+}
+
+/// The API's error domain, stamped into every AIP-193 `ErrorInfo`.
+pub const DOMAIN: &str = {{ printf "%q" .Domain }};
+
+/// The codecs this gateway was generated with, default first.
+pub static CODECS: &[CodecEntry] = &[
+{{- range .Codecs }}
+    CodecEntry {
+        name: {{ printf "%q" .Name }},
+        media_types: &[{{ range $i, $m := .MediaTypes }}{{ if $i }}, {{ end }}{{ printf "%q" $m }}{{ end }}],
+        framing: Framing::{{ .Framing }},
+        index: {{ .Index }},
+    },
+{{- end }}
+];
+
+/// No captures, for the fully-literal routes.
+pub(crate) static NONE: &[Capture] = &[];
+
+{{- range .Captures }}
+
+/// {{ .Doc }}
+pub(crate) static {{ .Ident }}: &[Capture] = &[
+{{- range .Spans }}
+    {{ . }},
+{{- end }}
+];
+{{- end }}

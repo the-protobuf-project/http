@@ -1,0 +1,34 @@
+{{ .Banner }}
+package {{ .Package }}
+
+import "github.com/the-protobuf-project/http/transcode-go/route"
+
+// The flattened match sequences each route walks.
+//
+// Shared between routes because several bindings differ only in HTTP method:
+// GET, PATCH and DELETE on one resource all walk the same path.
+var (
+{{- range .Matches }}
+	// {{ .Ident }} matches `{{ .Doc }}`.
+	{{ .Ident }} = []route.Match{
+{{- range .Segments }}
+		{{ . }},
+{{- end }}
+	}
+{{ end -}}
+)
+
+// noCaptures is the empty capture set, for the fully-literal routes.
+var noCaptures = []route.Capture{}
+
+// The capture spans, one set per distinct combination of fields and positions.
+var (
+{{- range .Captures }}
+	// {{ .Ident }} binds {{ .Doc }}.
+	{{ .Ident }} = []route.Capture{
+{{- range .Spans }}
+		{{ . }},
+{{- end }}
+	}
+{{ end -}}
+)

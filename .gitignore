@@ -1,15 +1,32 @@
 # Build output.
-target/
-dist/
+#
+# Anchored with a leading slash so these match only at the repository root. An
+# unanchored `target/` matches a directory of that name at *any* depth, which
+# silently swallowed plugin/target/ — the generator's emitters — and left a
+# clean checkout unable to build the plugin at all.
+#
+# Cargo writes to the workspace root only, and the release workflow stages
+# binaries in ./dist, so anchoring costs nothing.
+/target/
+/dist/
 
 # Agent and editor state.
-.claude/
+#
+# .claude/ is anchored for the same reason the build output is: a directory rule
+# without a leading slash matches at any depth, and a source tree is free to
+# contain a directory of any name. .DS_Store is left unanchored deliberately —
+# Finder writes one into every directory it opens, which is exactly the case a
+# depth-matching rule is for.
+/.claude/
 .DS_Store
 
 # protokit is a separate repository. It was cloned here while its `service`
 # package was unreleased; the plugin now depends on the published v1.3.0, so a
 # local checkout is only ever for working on protokit itself.
-protokit/
+#
+# Anchored: only a clone at the repository root is meant, and "protokit" is a
+# plausible name for a package directory.
+/protokit/
 
 # go.work is committed: every member is inside this repository, so it describes
 # the tree rather than one machine, and it is what lets the examples run from the
