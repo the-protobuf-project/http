@@ -33,7 +33,7 @@ percent-encoding = { workspace = true }
 
 rustls = { workspace = true }
 tokio-rustls = { workspace = true }
-rcgen = { version = "0.13", default-features = false, features = ["ring", "pem"] }
+rcgen = { version = "0.14", default-features = false, features = ["ring", "pem"] }
 h3 = { workspace = true, optional = true }
 h3-quinn = { workspace = true, optional = true }
 quinn = { workspace = true, optional = true }
