@@ -30,7 +30,7 @@ pub fn generate() -> Result<SelfSigned, rcgen::Error> {
     let certified = rcgen::generate_simple_self_signed(subject_alt_names)?;
 
     let cert_pem = certified.cert.pem();
-    let key_der = PrivateKeyDer::try_from(certified.key_pair.serialize_der())
+    let key_der = PrivateKeyDer::try_from(certified.signing_key.serialize_der())
         .map_err(|_| rcgen::Error::CouldNotParseKeyPair)?;
 
     Ok(SelfSigned {
