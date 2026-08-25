@@ -1,0 +1,47 @@
+# Generates the route tables the music examples serve.
+#
+# The plugin is built from source rather than pulled from a registry, because it
+# lives in this repository and must track the runtimes it emits for. `just gen`
+# builds it first.
+#
+# One frontend, two targets, one IR. The Rust and Go tables are emitted from the
+# same build of the same service IR, which is what the cross-target agreement
+# test in plugin/target holds them to.
+version: v2
+managed:
+  enabled: true
+  disable:
+    # googleapis is published, and its Go types live at their own import path.
+    # Rewriting them would generate a second copy of google.api under this
+    # example's module, which nothing else in the ecosystem would recognise as
+    # the same type.
+    - module: buf.build/googleapis/googleapis
+  override:
+    # The example's messages are generated into the example's own module rather
+    # than published anywhere, so the go_package in the protos — which names a
+    # module that does not exist — is overridden here.
+    - file_option: go_package_prefix
+      value: github.com/the-protobuf-project/grpc-gateway-rs/examples/music-go/gen
+plugins:
+  # The messages themselves. protoc-gen-go emits the structs and protojson
+  # marshals them, so the JSON mapping in README §4.1 — 64-bit integers as
+  # strings, enums by name, lowerCamelCase — comes from the protobuf runtime
+  # rather than from hand-written struct tags that only look like it.
+  - local: protoc-gen-go
+    out: ../music-go/gen
+    opt:
+      - paths=source_relative
+
+  - local: ../../target/protoc-gen-http
+    out: ../music-rs/src/generated
+    opt:
+      # The API's error domain. Stamped into every AIP-193 ErrorInfo and not
+      # derivable from the protos, which declare no such thing.
+      - domain=music.example.com
+      - lang=rust
+  - local: ../../target/protoc-gen-http
+    out: ../music-go/gateway
+    opt:
+      - domain=music.example.com
+      - lang=go
+      - package=gateway

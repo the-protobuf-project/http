@@ -1,0 +1,104 @@
+syntax = "proto3";
+
+package music.v1;
+
+import "google/api/field_behavior.proto";
+import "google/api/field_info.proto";
+import "google/api/resource.proto";
+import "google/protobuf/duration.proto";
+import "google/protobuf/timestamp.proto";
+
+option go_package = "music.example.com/gen/music/v1;musicv1";
+option java_multiple_files = true;
+option java_outer_classname = "MusicProto";
+option java_package = "com.music.v1";
+
+// An artist in the catalog.
+message Artist {
+  // The resource annotation is the whole contract. The type host becomes the
+  // schema, and the pattern's last segment becomes the primary key.
+  option (google.api.resource) = {
+    type: "music.example.com/Artist"
+    pattern: "artists/{artist}"
+    singular: "artist"
+    plural: "artists"
+  };
+
+  // The resource name of the artist.
+  string name = 1 [(google.api.field_behavior) = IDENTIFIER];
+
+  // The name shown to listeners.
+  string display_name = 2 [(google.api.field_behavior) = REQUIRED];
+
+  // A short biography.
+  string biography = 3 [(google.api.field_behavior) = OPTIONAL];
+
+  // Listeners in the trailing 30 days.
+  //
+  // A 64-bit integer, which protojson renders as a *string*. That mapping is
+  // the one most often got wrong, so the fixture carries it deliberately.
+  int64 monthly_listeners = 4 [(google.api.field_behavior) = OUTPUT_ONLY];
+
+  // When the artist was added to the catalog. Server-assigned.
+  google.protobuf.Timestamp create_time = 5 [(google.api.field_behavior) = OUTPUT_ONLY];
+
+  // An opaque value for optimistic concurrency. (AIP-154)
+  string etag = 6 [(google.api.field_behavior) = OUTPUT_ONLY];
+}
+
+// A recording released by an artist. The foreign key back to Artist is read
+// from the pattern below — it is never declared as a field.
+message Track {
+  option (google.api.resource) = {
+    type: "music.example.com/Track"
+    pattern: "artists/{artist}/tracks/{track}"
+    singular: "track"
+    plural: "tracks"
+  };
+
+  // The resource name of the track.
+  string name = 1 [(google.api.field_behavior) = IDENTIFIER];
+
+  // The track title.
+  string title = 2 [(google.api.field_behavior) = REQUIRED];
+
+  // How long the recording runs.
+  //
+  // A Duration rather than an int32 of milliseconds, per AIP-142. protojson
+  // renders it as decimal seconds with an "s" suffix — "545s" — which is
+  // another mapping this fixture pins.
+  google.protobuf.Duration duration = 3 [(google.api.field_behavior) = OPTIONAL];
+
+  // Whether the recording carries an explicit-content advisory.
+  bool explicit = 4 [(google.api.field_behavior) = OPTIONAL];
+
+  // How the track is distributed.
+  Availability availability = 5 [(google.api.field_behavior) = OPTIONAL];
+
+  // When the track was added. Server-assigned.
+  google.protobuf.Timestamp create_time = 6 [(google.api.field_behavior) = OUTPUT_ONLY];
+
+  // An opaque identifier for the request that created this track. (AIP-155)
+  string request_id = 7 [
+    (google.api.field_info).format = UUID4,
+    (google.api.field_behavior) = OPTIONAL
+  ];
+}
+
+// How a track is distributed.
+//
+// protojson renders an enum as its *name*, not its number, which is another
+// mapping this fixture pins.
+enum Availability {
+  // Unspecified.
+  AVAILABILITY_UNSPECIFIED = 0;
+
+  // Streamable anywhere.
+  AVAILABILITY_STREAMING = 1;
+
+  // Available for purchase only.
+  AVAILABILITY_DOWNLOAD_ONLY = 2;
+
+  // Withdrawn from distribution.
+  AVAILABILITY_UNAVAILABLE = 3;
+}

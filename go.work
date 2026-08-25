@@ -1,0 +1,18 @@
+go 1.26.4
+
+// The repository's Go modules, so `go build ./...`, `go test ./...` and
+// `go run ./examples/...` all work from the repository root rather than from
+// each module directory.
+//
+// Committed, unlike most workspaces. Every member is inside this repository, so
+// it describes the tree rather than one machine — and a contributor who has to
+// discover that the example only runs from its own directory has been given a
+// puzzle instead of a repository. It carries no replace directives: a workspace
+// applies the union of its members' replaces to every module in it, and one
+// pointing outside the tree is what made a clean checkout fail before protokit
+// published its service package.
+use (
+	./examples/music-go
+	./netadapter
+	./plugin
+)

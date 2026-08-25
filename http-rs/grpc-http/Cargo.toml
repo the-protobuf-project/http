@@ -1,0 +1,91 @@
+# The Rust runtime: an AIP-native HTTP/JSON surface over a gRPC service.
+#
+# Executes a route table compiled by protoc-gen-http. Parses no protobuf, reads
+# no descriptors, and interprets no path templates.
+
+[package]
+name = "grpc-http"
+description = "An AIP-native HTTP/JSON surface for gRPC services, driven by google.api.http"
+readme = "README.md"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+authors.workspace = true
+keywords.workspace = true
+categories.workspace = true
+
+[lints]
+workspace = true
+
+[features]
+default = ["json"]
+
+# The protojson codec for request and response bodies. On by default because a
+# gateway that cannot speak JSON has no reason to exist.
+#
+# Note this gates the *codec*, not JSON itself: the AIP-193 error envelope is
+# rendered as JSON in every build, so serde_json is a core dependency. A build
+# configuration in which errors cannot be rendered would be worse than the
+# dependency it saves.
+json = ["dep:serde"]
+
+# The binary protobuf codec, for clients that want the wire format without the
+# gRPC framing.
+proto = []
+
+# Serve over HTTP/3. Pulls in a QUIC stack, so a deployment that only terminates
+# TCP does not pay for it.
+http3 = ["dep:h3", "dep:h3-quinn", "dep:quinn"]
+
+# Terminate TLS in-process rather than behind a proxy.
+tls = ["dep:rustls", "dep:tokio-rustls", "dep:rustls-pemfile"]
+
+# Evaluate protovalidate CEL expressions the generator could not fold into
+# constant checks. Without it, a build using such an expression fails to
+# generate rather than silently skipping the constraint.
+cel = []
+
+# Everything, for testing and for the reference binary.
+full = ["json", "proto", "http3", "tls", "cel"]
+
+[dependencies]
+# --- always required -----------------------------------------------------
+tonic = { workspace = true }
+prost = { workspace = true }
+prost-types = { workspace = true }
+http = { workspace = true }
+http-body = { workspace = true }
+http-body-util = { workspace = true }
+bytes = { workspace = true }
+tower = { workspace = true }
+tower-service = { workspace = true }
+percent-encoding = { workspace = true }
+futures-util = { workspace = true }
+# Core, not feature-gated: the AIP-193 error envelope is JSON in every build.
+serde_json = { workspace = true }
+thiserror = { workspace = true }
+tracing = { workspace = true }
+
+# --- feature-gated -------------------------------------------------------
+serde = { workspace = true, optional = true }
+h3 = { workspace = true, optional = true }
+h3-quinn = { workspace = true, optional = true }
+quinn = { workspace = true, optional = true }
+rustls = { workspace = true, optional = true }
+tokio-rustls = { workspace = true, optional = true }
+rustls-pemfile = { workspace = true, optional = true }
+
+[dev-dependencies]
+tokio = { workspace = true, features = ["rt-multi-thread", "macros"] }
+tokio-test = { workspace = true }
+# The codec tests stand in for generated messages, which carry their own
+# protojson Serialize impls.
+serde = { workspace = true }
+
+[package.metadata.docs.rs]
+# docs.rs builds every feature, so the HTTP/3 and TLS surfaces are documented.
+all-features = true
+rustdoc-args = ["--cfg", "docsrs"]

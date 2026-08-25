@@ -1,0 +1,23 @@
+# Build output.
+target/
+dist/
+
+# Agent and editor state.
+.claude/
+.DS_Store
+
+# protokit is a separate repository. It was cloned here while its `service`
+# package was unreleased; the plugin now depends on the published v1.3.0, so a
+# local checkout is only ever for working on protokit itself.
+protokit/
+
+# go.work is committed: every member is inside this repository, so it describes
+# the tree rather than one machine, and it is what lets the examples run from the
+# repository root. Its checksum file is not — it is a lock over module content
+# that go.sum already covers per module.
+go.work.sum
+
+# Derived from buf.lock by `just vendor-protos`, purely so the VS Code
+# api-linter extension can resolve imports — it reads a path, not a buf module.
+# buf is the source of truth; this is a build artifact.
+examples/third_party/

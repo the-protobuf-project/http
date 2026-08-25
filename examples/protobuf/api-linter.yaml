@@ -1,0 +1,9 @@
+# api-linter configuration for the example protos.
+#
+# Empty of disabled rules on purpose: the fixture is meant to be AIP-clean with
+# no exclusions, because it is what the generator's AIP reading is developed
+# against. A rule that has to be switched off here is a sign the fixture is
+# wrong, not the rule.
+- included_paths:
+    - "music/v1/*.proto"
+  disabled_rules: []

@@ -1,0 +1,32 @@
+# The example module.
+#
+# buf is the only proto dependency mechanism here: googleapis is declared below
+# and pinned in buf.lock. Nothing is vendored into git, no --proto-path is
+# threaded through by hand, and protoc's include directory is not consulted.
+version: v2
+modules:
+  - path: .
+deps:
+  - buf.build/googleapis/googleapis
+
+lint:
+  use:
+    - STANDARD
+  except:
+    # buf's STANDARD category contradicts AIP on response naming, and this is
+    # an AIP-native project, so AIP wins.
+    #
+    # AIP-131/133/134 are explicit that a Get, Create, or Update method returns
+    # *the resource itself*: GetArtist returns Artist. buf wants
+    # GetArtistResponse, and wants every response type used exactly once.
+    # Following buf here would mean wrapping every resource in a single-field
+    # message, which is precisely the shape AIP tells you not to build.
+    - RPC_RESPONSE_STANDARD_NAME
+    - RPC_REQUEST_RESPONSE_UNIQUE
+    # Google's own APIs are split on the suffix (Pub/Sub has Publisher,
+    # Spanner has SpannerService) and no AIP requires it.
+    - SERVICE_SUFFIX
+
+breaking:
+  use:
+    - FILE

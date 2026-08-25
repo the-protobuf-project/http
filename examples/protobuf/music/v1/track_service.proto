@@ -1,0 +1,85 @@
+// The track half of the catalog.
+//
+// Between them these methods exercise every path-template shape a
+// general-purpose HTTP router cannot express: a multi-segment capture, a
+// capture followed by a literal, and a custom verb.
+syntax = "proto3";
+
+package music.v1;
+
+import "google/api/annotations.proto";
+import "google/api/client.proto";
+import "google/protobuf/empty.proto";
+import "music/v1/music.proto";
+import "music/v1/music_requests.proto";
+
+option go_package = "music.example.com/gen/music/v1;musicv1";
+option java_multiple_files = true;
+option java_outer_classname = "TrackServiceProto";
+option java_package = "com.music.v1";
+
+// Reads and writes tracks.
+service TrackService {
+  option (google.api.default_host) = "music.example.com";
+  option (google.api.oauth_scopes) = "https://www.googleapis.com/auth/music";
+
+  // Returns a single track. (AIP-131)
+  //
+  // A multi-segment capture, which `matchit` rejects outright.
+  rpc GetTrack(GetTrackRequest) returns (Track) {
+    option (google.api.http) = {get: "/v1/{name=artists/*/tracks/*}"};
+    option (google.api.method_signature) = "name";
+  }
+
+  // Lists the tracks an artist recorded. (AIP-132)
+  //
+  // A capture followed by a literal, which `matchit` also rejects.
+  rpc ListTracks(ListTracksRequest) returns (ListTracksResponse) {
+    option (google.api.http) = {get: "/v1/{parent=artists/*}/tracks"};
+    option (google.api.method_signature) = "parent";
+  }
+
+  // Adds a track to an artist. (AIP-133)
+  rpc CreateTrack(CreateTrackRequest) returns (Track) {
+    option (google.api.http) = {
+      post: "/v1/{parent=artists/*}/tracks"
+      body: "track"
+    };
+    option (google.api.method_signature) = "parent,track,track_id";
+  }
+
+  // Updates a track. (AIP-134)
+  rpc UpdateTrack(UpdateTrackRequest) returns (Track) {
+    option (google.api.http) = {
+      patch: "/v1/{track.name=artists/*/tracks/*}"
+      body: "track"
+    };
+    option (google.api.method_signature) = "track,update_mask";
+  }
+
+  // Removes a track. (AIP-135)
+  rpc DeleteTrack(DeleteTrackRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {delete: "/v1/{name=artists/*/tracks/*}"};
+    option (google.api.method_signature) = "name";
+  }
+
+  // Withdraws a track from distribution. (AIP-136)
+  //
+  // The custom verb is the shape a general-purpose router *accepts* but
+  // mishandles, folding ":withdraw" into the path variable so `name` binds to
+  // the wrong value. That silent corruption is worse than a rejection.
+  rpc WithdrawTrack(WithdrawTrackRequest) returns (Track) {
+    option (google.api.http) = {
+      post: "/v1/{name=artists/*/tracks/*}:withdraw"
+      body: "*"
+    };
+  }
+
+  // Streams tracks as they are added to an artist.
+  //
+  // Server streaming, which exercises the framings and the mid-stream failure
+  // contract in PROTOCOL.md §8.4.
+  rpc WatchTracks(WatchTracksRequest) returns (stream WatchTracksResponse) {
+    option (google.api.http) = {get: "/v1/{parent=artists/*}/tracks:watch"};
+  }
+}

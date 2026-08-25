@@ -1,0 +1,27 @@
+# Build-time integration for grpc-http.
+#
+# A thin build.rs shim that invokes protoc-gen-http beside tonic-build and wires
+# the generated route tables into the crate. The generator itself is Go: that is
+# where protogen, the google.api.* extension types, buf, and api-linter live.
+
+[package]
+name = "grpc-http-build"
+description = "Build-time codegen for grpc-http, from google.api.http annotations"
+readme = "README.md"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+authors.workspace = true
+keywords = ["grpc", "http", "codegen", "protobuf", "build-dependencies"]
+categories = ["development-tools::build-utils"]
+
+[lints]
+workspace = true
+
+[dependencies]
+prost = { workspace = true }
+prost-types = { workspace = true }
+prost-build = { workspace = true }

@@ -1,0 +1,10 @@
+module github.com/the-protobuf-project/grpc-gateway-rs/plugin
+
+go 1.26.4
+
+require (
+	github.com/the-protobuf-project/protokit v1.3.0
+	google.golang.org/protobuf v1.36.11
+)
+
+require google.golang.org/genproto/googleapis/api v0.0.0-20260630182238-925bb5da69e7 // indirect

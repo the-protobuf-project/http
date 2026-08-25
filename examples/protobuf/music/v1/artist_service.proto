@@ -1,0 +1,59 @@
+// The artist half of the catalog.
+//
+// One service per resource, which keeps each one small and lets them be served
+// by different backends later without a client noticing.
+syntax = "proto3";
+
+package music.v1;
+
+import "google/api/annotations.proto";
+import "google/api/client.proto";
+import "google/protobuf/empty.proto";
+import "music/v1/music.proto";
+import "music/v1/music_requests.proto";
+
+option go_package = "music.example.com/gen/music/v1;musicv1";
+option java_multiple_files = true;
+option java_outer_classname = "ArtistServiceProto";
+option java_package = "com.music.v1";
+
+// Reads and writes artists.
+service ArtistService {
+  option (google.api.default_host) = "music.example.com";
+  option (google.api.oauth_scopes) = "https://www.googleapis.com/auth/music";
+
+  // Returns a single artist. (AIP-131)
+  rpc GetArtist(GetArtistRequest) returns (Artist) {
+    option (google.api.http) = {get: "/v1/{name=artists/*}"};
+    option (google.api.method_signature) = "name";
+  }
+
+  // Lists artists in the catalog. (AIP-132)
+  rpc ListArtists(ListArtistsRequest) returns (ListArtistsResponse) {
+    option (google.api.http) = {get: "/v1/artists"};
+  }
+
+  // Adds an artist to the catalog. (AIP-133)
+  rpc CreateArtist(CreateArtistRequest) returns (Artist) {
+    option (google.api.http) = {
+      post: "/v1/artists"
+      body: "artist"
+    };
+    option (google.api.method_signature) = "artist,artist_id";
+  }
+
+  // Updates an artist. (AIP-134)
+  rpc UpdateArtist(UpdateArtistRequest) returns (Artist) {
+    option (google.api.http) = {
+      patch: "/v1/{artist.name=artists/*}"
+      body: "artist"
+    };
+    option (google.api.method_signature) = "artist,update_mask";
+  }
+
+  // Removes an artist from the catalog. (AIP-135)
+  rpc DeleteArtist(DeleteArtistRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {delete: "/v1/{name=artists/*}"};
+    option (google.api.method_signature) = "name";
+  }
+}

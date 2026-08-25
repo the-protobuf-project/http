@@ -1,0 +1,48 @@
+# The proof of concept: the music catalog served over HTTP by grpc-http.
+#
+# Not published — this exists to prove the runtime works end to end and to show
+# what protoc-gen-http must emit.
+
+[package]
+name = "music-example"
+description = "Proof-of-concept music catalog served by grpc-http"
+publish = false
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[lints]
+workspace = true
+
+[dependencies]
+grpc-http = { workspace = true, features = ["json"] }
+tonic = { workspace = true }
+http = { workspace = true }
+bytes = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+tokio = { workspace = true, features = ["rt-multi-thread", "macros", "net", "signal"] }
+hyper = { workspace = true }
+hyper-util = { workspace = true }
+http-body = { workspace = true }
+http-body-util = { workspace = true }
+tracing = { workspace = true }
+percent-encoding = { workspace = true }
+
+rustls = { workspace = true }
+tokio-rustls = { workspace = true }
+rcgen = { version = "0.13", default-features = false, features = ["ring", "pem"] }
+h3 = { workspace = true, optional = true }
+h3-quinn = { workspace = true, optional = true }
+quinn = { workspace = true, optional = true }
+
+[features]
+default = []
+# Serve HTTP/3 over QUIC. Behind a feature because it pulls in a QUIC stack a
+# TCP-only deployment does not need.
+http3 = ["dep:h3", "dep:h3-quinn", "dep:quinn"]
+
+[dev-dependencies]
+tokio = { workspace = true, features = ["rt-multi-thread", "macros"] }

@@ -1,0 +1,32 @@
+{
+  // Where the api-linter extension resolves imports from.
+  //
+  // Order matters only in that every import must be findable somewhere here:
+  //   examples/protobuf     the module's own files (music/v1/*.proto)
+  //   examples/third_party  google/api/* and google/protobuf/*, vendored by
+  //                         `buf export` so the path is stable — the buf cache
+  //                         path is version-hashed and moves on every update.
+  //
+  // Regenerate with:
+  //   cd examples/protobuf && buf dep update && buf export . --output ../third_party
+  //   rm -rf ../third_party/music
+  "gapi.protoPath": [
+    "./examples/protobuf",
+    "./examples/third_party"
+  ],
+  "gapi.linterEnabled": true,
+
+  "[proto3]": {
+    "editor.formatOnSave": true,
+    "editor.tabSize": 2
+  },
+
+  // The workspace lints deny missing docs, so surface that in-editor rather
+  // than at the end of a build.
+  "rust-analyzer.check.command": "clippy",
+  "rust-analyzer.check.allTargets": true,
+
+  "files.exclude": {
+    "**/target": true
+  }
+}
