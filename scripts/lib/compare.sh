@@ -13,8 +13,12 @@
 # stop kills both servers on any exit path, including a failed assertion, so a
 # non-zero exit never leaves a port bound for the next run.
 stop() {
-  [ -n "$go_pid" ] && kill "$go_pid" 2>/dev/null || true
-  [ -n "$rs_pid" ] && kill "$rs_pid" 2>/dev/null || true
+  if [ -n "$go_pid" ]; then
+    kill "$go_pid" 2>/dev/null || true
+  fi
+  if [ -n "$rs_pid" ]; then
+    kill "$rs_pid" 2>/dev/null || true
+  fi
   wait 2>/dev/null || true
 }
 trap stop EXIT

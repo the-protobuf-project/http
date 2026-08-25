@@ -176,5 +176,20 @@ jobs:
       - name: Shell check
         # The conformance run is a shell script that decides whether a release
         # is safe; it is held to the same bar as the code it checks.
-        run: shellcheck scripts/conformance.sh scripts/lib/compare.sh
+        #
+        # The version is pinned rather than taken from the runner image. A bare
+        # `shellcheck` is whatever ubuntu-latest happens to ship, and that
+        # drifts underneath the repository: the image moving is enough to turn
+        # the build red with no commit behind it, and a developer on a newer
+        # release cannot reproduce the failure locally. Pinning makes the two
+        # answer the same question.
+        env:
+          SHELLCHECK_VERSION: v0.11.0
+        run: |
+          mkdir -p "$HOME/.local/bin"
+          curl -sSfL "https://github.com/koalaman/shellcheck/releases/download/${SHELLCHECK_VERSION}/shellcheck-${SHELLCHECK_VERSION}.linux.x86_64.tar.xz" \
+            | tar -xJ -C "$HOME/.local/bin" --strip-components=1 \
+              "shellcheck-${SHELLCHECK_VERSION}/shellcheck"
+          "$HOME/.local/bin/shellcheck" --version
+          "$HOME/.local/bin/shellcheck" scripts/conformance.sh scripts/lib/compare.sh
       - run: just conformance
