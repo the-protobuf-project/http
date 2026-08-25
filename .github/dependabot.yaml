@@ -1,0 +1,104 @@
+# Dependabot configuration.
+#
+# This enables Dependabot *version updates* — the automated bump pull requests.
+# Dependabot *security alerts* are a separate repository setting under
+# Security > Code security and analysis; keep both on.
+#
+# Every ecosystem here is grouped, because an ungrouped week produces a dozen
+# pull requests that each run the full matrix — protos, Rust, Go, generated-code
+# staleness, and a conformance run that starts two servers. Grouping is what
+# makes CI-gated auto-merge affordable.
+#
+# Docs: https://docs.github.com/code-security/dependabot/dependabot-version-updates
+version: 2
+updates:
+  # The Rust workspace. One manifest covers the runtime, the build integration
+  # and the example, because Cargo resolves the whole workspace together.
+  - package-ecosystem: "cargo"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    open-pull-requests-limit: 5
+    labels: ["dependencies", "rust"]
+    commit-message:
+      prefix: "deps"
+    groups:
+      rust-dependencies:
+        patterns: ["*"]
+        # A major bump is a different question from a patch: hyper, tonic and
+        # rustls majors have moved public types before, and the answer is a
+        # migration rather than a merge.
+        update-types: ["minor", "patch"]
+      rust-major:
+        patterns: ["*"]
+        update-types: ["major"]
+
+  # The Go runtime.
+  - package-ecosystem: "gomod"
+    directory: "/transcode-go"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    open-pull-requests-limit: 5
+    labels: ["dependencies", "go"]
+    commit-message:
+      prefix: "deps"
+    groups:
+      go-dependencies:
+        patterns: ["*"]
+
+  # The generator. Its dependency set is the load-bearing one: protokit is the
+  # service IR, and google.golang.org/protobuf is what protoc-gen-go emits
+  # against, so a bump to either can move generated output without a line of
+  # this repository changing.
+  #
+  # Both are still auto-bumped, because the check that decides whether one is
+  # safe already runs: `just check-gen` regenerates and fails on any diff, and
+  # the conformance run puts the same questions to both runtimes afterwards. A
+  # bump that changes generated code turns CI red and stops the auto-merge.
+  - package-ecosystem: "gomod"
+    directory: "/plugin"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    open-pull-requests-limit: 5
+    labels: ["dependencies", "go", "generator"]
+    commit-message:
+      prefix: "deps"
+    groups:
+      generator-dependencies:
+        patterns: ["*"]
+
+  # The Go example. It has its own module so the generated table is proved to
+  # compile against a released runtime rather than against the workspace.
+  - package-ecosystem: "gomod"
+    directory: "/examples/music-go"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    open-pull-requests-limit: 3
+    labels: ["dependencies", "go", "example"]
+    commit-message:
+      prefix: "deps"
+    groups:
+      example-dependencies:
+        patterns: ["*"]
+
+  # The actions this repository's own workflows run.
+  #
+  # Worth automating precisely because release.yaml pins them by commit SHA: a
+  # pinned action never updates on its own, so without this the release pipeline
+  # would quietly run last year's actions forever.
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    open-pull-requests-limit: 5
+    labels: ["dependencies", "github-actions"]
+    commit-message:
+      prefix: "ci"
+    groups:
+      actions:
+        patterns: ["*"]

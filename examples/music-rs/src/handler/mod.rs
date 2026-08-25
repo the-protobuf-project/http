@@ -23,13 +23,16 @@ use transcode::route::{Resolution, RouteTable};
 mod artists;
 mod call;
 mod dispatch;
+mod negotiate;
 mod query;
 mod reply;
 mod tracks;
 mod watch;
 
 pub use call::Call;
+pub use negotiate::Codecs;
 use query::{malformed_path, parse_query};
+pub use watch::FAIL_AFTER;
 
 /// The handler: a route table, a codec registry, and the service behind it.
 #[derive(Clone, Debug)]
@@ -75,13 +78,30 @@ impl Handler {
         self.serve_with(method, uri, body, None)
     }
 
-    /// Serves one request, with the `Accept` header the transport read.
+    /// Serves one request, with the negotiation headers the transport read.
     pub fn serve_with(
         &self,
         method: &HttpMethod,
         uri: &str,
         body: Vec<u8>,
         accept: Option<&str>,
+    ) -> Reply {
+        self.serve_negotiated(method, uri, body, accept, None)
+    }
+
+    /// Serves one request, given both negotiation headers.
+    ///
+    /// `Content-Type` is separate from `Accept` because they answer different
+    /// questions — what the body is, and what the caller will take — and a
+    /// transport that reads one must be able to pass it without inventing the
+    /// other.
+    pub fn serve_negotiated(
+        &self,
+        method: &HttpMethod,
+        uri: &str,
+        body: Vec<u8>,
+        accept: Option<&str>,
+        content_type: Option<&str>,
     ) -> Reply {
         let (path, query_string) = uri.split_once('?').unwrap_or((uri, ""));
 
@@ -96,6 +116,21 @@ impl Handler {
                     }
                 };
 
+                let method = Method::from_handler(matched.route.handler);
+
+                // Negotiated before the body is looked at, so a caller whose
+                // Content-Type names no codec gets a 415 rather than whatever
+                // the JSON decoder happens to say about bytes it cannot read.
+                let codecs = match negotiate::negotiate(
+                    content_type,
+                    accept,
+                    query::alt(query_string).as_deref(),
+                    method.is_streaming(),
+                ) {
+                    Ok(codecs) => codecs,
+                    Err(err) => return self.render_error(&err),
+                };
+
                 let call = Call {
                     catalog: &self.catalog,
                     path: captures
@@ -104,8 +139,9 @@ impl Handler {
                         .collect(),
                     query: parse_query(query_string),
                     body,
-                    method: Method::from_handler(matched.route.handler),
+                    method,
                     accept: accept.map(ToString::to_string),
+                    codecs,
                 };
 
                 match dispatch::dispatch(&call) {

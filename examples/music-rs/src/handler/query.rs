@@ -18,6 +18,22 @@ pub(super) fn malformed_path(err: &transcode::route::CaptureError, path: &str) -
     )
 }
 
+/// Reads the `?alt=` response-codec selector out of a raw query string.
+///
+/// Read before the query is bound because negotiation happens first: a caller
+/// who asked for a codec that does not exist is owed that answer whether or not
+/// the rest of their query is well formed.
+pub(super) fn alt(raw: &str) -> Option<String> {
+    parse_query(raw).get("alt").cloned()
+}
+
+/// The query parameters every method accepts, which are therefore never
+/// reported as unknown.
+///
+/// These are the system parameters of README §2: they select a codec, mask a
+/// response, or format it, and none of them binds to a field.
+pub(super) const SYSTEM_PARAMS: &[&str] = &["alt", "fields", "prettyPrint"];
+
 /// Parses a query string into decoded key/value pairs.
 ///
 /// Repeated keys keep the last value, which is enough for this fixture; the

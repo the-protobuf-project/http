@@ -1,0 +1,95 @@
+name: Dependabot auto-merge
+
+# Turns on GitHub's native auto-merge for a Dependabot pull request, so it lands
+# by itself once every required check has passed.
+#
+# The merge decision is *not* made here. This workflow only asks GitHub to queue
+# the pull request; branch protection then holds it until the required checks
+# are green, and merges it if they are. That split is deliberate — a workflow
+# that polled the checks itself and then merged would be a second, weaker copy
+# of the rule, and the two would eventually disagree.
+#
+# This therefore needs two repository settings to do anything:
+#
+#   1. Settings > General > "Allow auto-merge".
+#   2. A branch protection rule on `main` with the CI jobs as required checks.
+#
+# Without (2) there is nothing for auto-merge to wait on and a pull request
+# would land unchecked, which is the failure mode worth being loud about — so
+# the job below refuses to run when no required checks are configured.
+on: pull_request_target
+
+# Default-deny. The job below narrows to exactly what enabling auto-merge needs.
+permissions:
+  contents: read
+
+concurrency:
+  group: dependabot-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  auto-merge:
+    # pull_request_target runs with the base repository's token, which is what
+    # makes the API calls below possible: a `pull_request` run triggered by
+    # Dependabot gets a read-only token and could not enable auto-merge.
+    #
+    # The usual danger of pull_request_target is checking out and running the
+    # pull request's code with that elevated token. Nothing here checks out any
+    # code — the steps only call the API — so that danger does not arise.
+    if: github.actor == 'dependabot[bot]'
+    runs-on: ubuntu-latest
+    permissions:
+      # Enable auto-merge on the pull request, and approve it.
+      contents: write
+      pull-requests: write
+    steps:
+      - name: Require branch protection
+        # Auto-merge with no required checks is just "merge". Failing here is
+        # the point: it turns a silently unguarded repository into a red job
+        # somebody has to look at.
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          checks="$(gh api "repos/${GITHUB_REPOSITORY}/branches/${GITHUB_BASE_REF}/protection/required_status_checks" \
+            --jq '.contexts | length' 2>/dev/null || echo 0)"
+          if [ "$checks" -eq 0 ]; then
+            echo "::error::No required status checks on ${GITHUB_BASE_REF}." \
+                 "Auto-merge would land this pull request unchecked."
+            exit 1
+          fi
+          echo "${checks} required check(s) will gate this merge."
+
+      - name: Fetch update metadata
+        id: metadata
+        uses: dependabot/fetch-metadata@25dd0e34f4fe68f24cc83900b1fe3fe149efef98 # v3.1.0
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Enable auto-merge
+        # Patch and minor only. A major bump is a migration, not an update: the
+        # generator's dependencies decide what generated code looks like, and
+        # the runtimes' decide what the wire looks like. CI would catch a break,
+        # but "CI caught it" is not the same as "a person chose to do it".
+        if: |
+          steps.metadata.outputs.update-type == 'version-update:semver-patch' ||
+          steps.metadata.outputs.update-type == 'version-update:semver-minor'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_URL: ${{ github.event.pull_request.html_url }}
+        run: |
+          # Squash, so a bump is one commit on main rather than Dependabot's
+          # rebase history.
+          gh pr merge --auto --squash "$PR_URL"
+
+      - name: Explain a skipped major
+        if: steps.metadata.outputs.update-type == 'version-update:semver-major'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          DEP: ${{ steps.metadata.outputs.dependency-names }}
+        run: |
+          # Said on the pull request rather than only in a log, because the
+          # person who has to act on it is reading the pull request.
+          gh pr comment "$PR_URL" --body \
+            "Not auto-merged: \`${DEP}\` is a major version bump, which is a migration rather than an update. Review and merge by hand."

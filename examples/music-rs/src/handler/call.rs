@@ -25,6 +25,8 @@ pub struct Call<'a> {
     pub method: Method,
     /// The request's `Accept` header, for content negotiation.
     pub accept: Option<String>,
+    /// The codecs negotiated for this request.
+    pub codecs: super::negotiate::Codecs,
 }
 
 impl Call<'_> {
@@ -46,6 +48,50 @@ impl Call<'_> {
                     ),
             )
         })
+    }
+
+    /// Rejects any query parameter the binding does not bind.
+    ///
+    /// This is the opposite of grpc-gateway, which discards them — turning a
+    /// typo in an update call into a silent no-op. The parameter is named as
+    /// the caller spelled it, because that is what they have to correct.
+    ///
+    /// The system parameters are always allowed: they select a codec or shape a
+    /// response rather than binding to a field.
+    ///
+    /// # Errors
+    ///
+    /// `400` with a `BadRequest` naming every unknown parameter at once, so a
+    /// caller with two typos learns about two.
+    pub fn reject_unknown_query(&self, bound: &[&str]) -> Result<(), Box<Error>> {
+        let mut unknown: Vec<&str> = self
+            .query
+            .keys()
+            .map(String::as_str)
+            .filter(|name| !bound.contains(name) && !super::query::SYSTEM_PARAMS.contains(name))
+            .collect();
+        if unknown.is_empty() {
+            return Ok(());
+        }
+
+        // Sorted so the response is deterministic: the map's iteration order is
+        // not, and an error body that reorders between identical requests is
+        // one no test can assert on.
+        unknown.sort_unstable();
+
+        Err(Box::new(Error::invalid_fields(
+            unknown
+                .into_iter()
+                .map(|name| transcode::error::FieldViolation {
+                    field: name.to_string(),
+                    description: format!("Unknown query parameter {name:?}."),
+                    reason: "UNKNOWN_QUERY_PARAMETER".into(),
+                })
+                .collect(),
+            "UNKNOWN_QUERY_PARAMETER",
+            DOMAIN,
+            self.method.full_name(),
+        )))
     }
 
     /// A query parameter parsed as a `usize`, or 0 when absent.

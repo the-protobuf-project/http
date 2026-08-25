@@ -18,6 +18,7 @@ pub(super) fn get(call: &Call<'_>) -> Result<Reply, Box<Error>> {
 
 /// `GET /v1/artists`
 pub(super) fn list(call: &Call<'_>) -> Result<Reply, Box<Error>> {
+    call.reject_unknown_query(&["pageSize", "pageToken"])?;
     let page_size = call.query_usize("pageSize")?;
     let artists = call.rpc(call.catalog.list_artists(page_size))?;
     call.ok(&ListArtistsResponse {
@@ -42,6 +43,7 @@ pub(super) fn create(call: &Call<'_>) -> Result<Reply, Box<Error>> {
 
 /// `PATCH /v1/{artist.name=artists/*}` with `body: "artist"`.
 pub(super) fn update(call: &Call<'_>) -> Result<Reply, Box<Error>> {
+    call.reject_unknown_query(&["updateMask"])?;
     let name = call.capture("artist.name")?.to_string();
     let patch: Artist = call.decode()?;
     let updated = call.rpc(
@@ -57,6 +59,7 @@ pub(super) fn update(call: &Call<'_>) -> Result<Reply, Box<Error>> {
 /// artist that still has tracks is a `FAILED_PRECONDITION` rather than a
 /// silent cascade.
 pub(super) fn delete(call: &Call<'_>) -> Result<Reply, Box<Error>> {
+    call.reject_unknown_query(&["force"])?;
     let name = call.capture("name")?;
     let force = call.query_bool("force");
     call.rpc(call.catalog.delete_artist(name, force))?;

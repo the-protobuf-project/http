@@ -1,0 +1,138 @@
+name: Release
+
+# Publishes a release when a semver tag is pushed.
+#
+# What a consumer of this repository actually needs is the *generator*: the Go
+# modules and the Rust crates are fetched by version from their own registries,
+# but `protoc-gen-http` is a binary that has to be on PATH before either can be
+# regenerated. So that is what gets built and attached here.
+on:
+  push:
+    tags: ["v*"]
+
+# Default-deny at the workflow level. Only the job that publishes gets write, so
+# a compromised step in verify or build cannot touch the repository.
+permissions:
+  contents: read
+
+concurrency:
+  group: release-${{ github.ref }}
+  # Never cancel a release in flight: a half-published release is worse than a
+  # slow one.
+  cancel-in-progress: false
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  verify:
+    # Gate the release on a green build so a broken tag is never published.
+    #
+    # This duplicates CI deliberately. CI ran against the commit; this runs
+    # against the tag, and the two are only the same if nothing moved in
+    # between — which is exactly the assumption a release should not make.
+    name: Verify
+    runs-on: ubuntu-latest
+    steps:
+      # Pinned to a commit SHA rather than a tag: a tag is mutable, and an
+      # action resolved by tag runs whatever that tag points at on the day the
+      # workflow fires. CI pins by tag because a compromised action there costs
+      # a red build; here it would sign and publish.
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version-file: transcode-go/go.mod
+          cache: true
+      - uses: dtolnay/rust-toolchain@6c977a6ca4077a0ceb28ffbe03f59d46e9ac8772 # v1
+        with:
+          toolchain: stable
+      - uses: extractions/setup-just@53165ef7e734c5c07cb06b3c8e7b647c5aa16db3 # v4.0.0
+      - name: Go
+        run: |
+          go build ./transcode-go/... ./plugin/... ./examples/music-go/...
+          go test ./transcode-go/... ./plugin/... ./examples/music-go/...
+      - name: Rust
+        run: cargo test --workspace --all-features
+      - name: Conformance
+        # The runtimes agreeing is the claim this project makes. A release that
+        # has not re-checked it is publishing an untested claim.
+        run: just conformance
+
+  build:
+    name: protoc-gen-http (${{ matrix.target }})
+    needs: verify
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { target: linux-amd64, runner: ubuntu-latest, goos: linux, goarch: amd64 }
+          - { target: linux-arm64, runner: ubuntu-latest, goos: linux, goarch: arm64 }
+          - { target: darwin-amd64, runner: ubuntu-latest, goos: darwin, goarch: amd64 }
+          - { target: darwin-arm64, runner: ubuntu-latest, goos: darwin, goarch: arm64 }
+          - { target: windows-amd64, runner: ubuntu-latest, goos: windows, goarch: amd64 }
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version-file: plugin/go.mod
+          cache: true
+      - name: Build
+        # Cross-compiled from one runner because the generator is pure Go with
+        # no cgo: the binary that comes out is the same one a native runner
+        # would produce, and five native runners would only buy five chances for
+        # a flake.
+        #
+        # The version and module path are stamped in so the banner every
+        # generated file carries names the release it came from. Deriving the
+        # project link from the module path rather than the binary name is what
+        # keeps a repository rename from leaving a dead URL behind.
+        env:
+          GOOS: ${{ matrix.goos }}
+          GOARCH: ${{ matrix.goarch }}
+          CGO_ENABLED: "0"
+        run: |
+          set -euo pipefail
+          name="protoc-gen-http"
+          [ "$GOOS" = "windows" ] && name="${name}.exe"
+          module="github.com/the-protobuf-project/http/plugin"
+          go build -trimpath \
+            -ldflags "-s -w -X main.version=${GITHUB_REF_NAME} -X main.modulePath=${module}" \
+            -o "dist/${name}" ./plugin/cmd/protoc-gen-http
+          tar -czf "protoc-gen-http-${GITHUB_REF_NAME}-${{ matrix.target }}.tar.gz" -C dist "$name"
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: protoc-gen-http-${{ matrix.target }}
+          path: protoc-gen-http-*.tar.gz
+          if-no-files-found: error
+
+  release:
+    name: Publish release
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      # Creates the release, and nothing else.
+      contents: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          # Full history, so the notes can diff against the previous tag.
+          fetch-depth: 0
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          path: dist
+          merge-multiple: true
+      - name: Checksums
+        # One file rather than one per artifact: a consumer verifies the set
+        # they downloaded in a single command.
+        run: |
+          cd dist
+          sha256sum ./*.tar.gz > SHA256SUMS
+          cat SHA256SUMS
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@3d0d9888cb7fd7b750713d6e236d1fcb99157228 # v3.0.2
+        with:
+          files: dist/*
+          generate_release_notes: true
+          # A tag carrying a hyphen is a pre-release: v1.0.0-rc.1, v0.2.0-beta.
+          prerelease: ${{ contains(github.ref_name, '-') }}

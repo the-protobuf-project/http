@@ -146,6 +146,32 @@ impl Method {
             Method::WatchTracks => false,
         }
     }
+
+    /// Whether the method streams its response.
+    ///
+    /// Decides whether the status line may be written when the response opens,
+    /// and whether a streaming-only codec such as SSE is a legal choice for it.
+    ///
+    /// There is no client-stream counterpart: the service IR rejects a
+    /// `google.api.http` rule on a client-streaming method outright, because
+    /// HTTP has no honest mapping for one.
+    #[must_use]
+    pub const fn is_streaming(self) -> bool {
+        match self {
+            Method::GetArtist => false,
+            Method::ListArtists => false,
+            Method::CreateArtist => false,
+            Method::UpdateArtist => false,
+            Method::DeleteArtist => false,
+            Method::GetTrack => false,
+            Method::ListTracks => false,
+            Method::CreateTrack => false,
+            Method::UpdateTrack => false,
+            Method::DeleteTrack => false,
+            Method::WithdrawTrack => false,
+            Method::WatchTracks => true,
+        }
+    }
 }
 
 /// The API's error domain, stamped into every AIP-193 `ErrorInfo`.

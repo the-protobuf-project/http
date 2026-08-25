@@ -148,6 +148,15 @@ lint-go:
 run-go *ARGS:
     go run ./examples/music-go/cmd/music-server {{ARGS}}
 
+# Run both runtimes and check they answer identically.
+#
+# The check no unit test can make: each runtime's own tests are written against
+# its own behaviour, so a disagreement between them shows up only when the same
+# question is put to both over a real socket.
+[group('ci')]
+conformance:
+    ./scripts/conformance.sh
+
 # What CI runs.
 [group('ci')]
-ci: lint-protos lint-go check-gen lint test test-go test-example-go test-plugin
+ci: lint-protos lint-go check-gen lint test test-go test-example-go test-plugin conformance

@@ -15,6 +15,7 @@ pub(super) fn get(call: &Call<'_>) -> Result<Reply, Box<Error>> {
 
 /// `GET /v1/{parent=artists/*}/tracks` — a capture followed by a literal.
 pub(super) fn list(call: &Call<'_>) -> Result<Reply, Box<Error>> {
+    call.reject_unknown_query(&["pageSize", "pageToken"])?;
     let parent = call.capture("parent")?;
     let page_size = call.query_usize("pageSize")?;
     let tracks = call.rpc(call.catalog.list_tracks(parent, page_size))?;
@@ -37,6 +38,7 @@ pub(super) fn create(call: &Call<'_>) -> Result<Reply, Box<Error>> {
 
 /// `PATCH /v1/{track.name=artists/*/tracks/*}` with `body: "track"`.
 pub(super) fn update(call: &Call<'_>) -> Result<Reply, Box<Error>> {
+    call.reject_unknown_query(&["updateMask"])?;
     let name = call.capture("track.name")?.to_string();
     let patch: Track = call.decode()?;
     let updated = call.rpc(call.catalog.update_track(&name, patch, &call.update_mask()))?;

@@ -19,10 +19,11 @@ The OpenAPI target is not built yet, and the Python runtime is deferred.
 - [Quick start](#quick-start)
 - [Repository layout](#repository-layout)
 - [Building from a clean checkout](#building-from-a-clean-checkout)
-- [Architecture](#architecture) — how the code is arranged
-- [The protocol](#the-protocol) — normative wire behaviour
+- [Architecture](#architecture)
+- [The protocol](#the-protocol)
 - [Divergences from grpc-gateway](#divergences-from-grpc-gateway)
 - [Testing](#testing)
+- [CI and releases](#ci-and-releases)
 - [Non-goals](#non-goals)
 
 ## Why not grpc-gateway
@@ -95,6 +96,11 @@ http/
   Cargo.toml            Rust workspace root
   Justfile              every task; `just` lists them
   go.work               the four Go modules, so root-level commands resolve
+
+  .github/workflows/    CI, release, and Dependabot auto-merge
+  scripts/
+    conformance.sh      asks both runtimes the same questions
+    lib/compare.sh      how two answers are compared
 
   plugin/               protoc-gen-http, the Go generator (its own module)
     ir/                 the service IR as a protokit factory model
@@ -864,9 +870,41 @@ The agreement check is the one a per-target golden file cannot make: two golden
 files can each be internally consistent while describing different route tables,
 and the drift only shows up as two runtimes answering one request differently.
 
+Above all of them sits the conformance run, which starts both runtimes and puts
+the same questions to each over a real socket:
+
 ```sh
-just ci      # protos, Rust, Go, plugin, and a staleness check on generated code
+just conformance   # rust vs go, 16 cases plus the transport matrix
+just ci            # everything, including the above
 ```
+
+Neither runtime's own suite can catch a disagreement between them — each is
+written against its own behaviour — so this is the only check that the claim on
+the first line of this README is true. It found four real defects the first time
+it ran; see [Divergences](#divergences-from-grpc-gateway) for what the protocol
+requires and `scripts/conformance.sh` for what is asserted.
+
+## CI and releases
+
+| Workflow | Runs on | What it does |
+| --- | --- | --- |
+| `ci.yaml` | push, pull request | protos (buf + api-linter), Rust (fmt/clippy/test), Go (3 modules), generated-code staleness, and the conformance run |
+| `release.yaml` | a `v*` tag | re-verifies against the tag, cross-compiles `protoc-gen-http` for five platforms, publishes a release with checksums and generated notes |
+| `dependabot-auto-merge.yaml` | Dependabot pull requests | enables GitHub auto-merge for patch and minor bumps; majors get a comment explaining why they were left |
+
+The release workflow pins every action by commit SHA, because a tag is mutable
+and that job signs and publishes. CI pins by tag, where a compromised action
+costs a red build rather than a release.
+
+**Auto-merge needs two repository settings**, and the workflow fails loudly
+rather than merging if the second is missing:
+
+1. Settings → General → *Allow auto-merge*.
+2. A branch protection rule on `main` listing the CI jobs as required checks.
+
+Nothing merges because a workflow decided to. The workflow only queues the pull
+request; branch protection holds it until the required checks pass. A workflow
+that polled the checks itself would be a second, weaker copy of that rule.
 
 # Non-goals
 

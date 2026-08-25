@@ -41,10 +41,12 @@ impl Call<'_> {
             .map_err(|err| Box::new(err.into_gateway_error(DOMAIN, self.method.full_name())))?;
 
         let mut headers = HeaderMap::new();
-        headers.insert(
-            http::header::CONTENT_TYPE,
-            HeaderValue::from_static("application/json"),
-        );
+        // From the negotiated codec rather than a literal: a response that
+        // announces a media type the caller did not get is worse than one that
+        // announces nothing, and hardcoding it here is how the two drift.
+        if let Ok(value) = HeaderValue::from_str(self.codecs.response.content_type()) {
+            headers.insert(http::header::CONTENT_TYPE, value);
+        }
         if let Some(location) = location
             && let Ok(value) = HeaderValue::from_str(location)
         {

@@ -1,0 +1,37 @@
+# How GitHub groups the auto-generated release notes.
+#
+# Used by `generate_release_notes: true` in workflows/release.yaml. Categories
+# match by pull-request label, and anything unmatched falls into "Other
+# changes" rather than being dropped.
+changelog:
+  exclude:
+    labels:
+      - ignore-for-release
+    authors:
+      # Dependency bumps are real changes but they are not what a reader of the
+      # notes is looking for, and an auto-merged week of them would bury the
+      # rest. The Dependencies category below still catches anything a human
+      # opened.
+      - dependabot
+  categories:
+    - title: Protocol
+      # A change to the wire contract is the one a consumer must read: it can
+      # break a client that was written against the old behaviour, and both
+      # runtimes move together when it lands.
+      labels: ["protocol", "breaking"]
+    - title: Features
+      labels: ["feature", "feat", "enhancement"]
+    - title: Bug Fixes
+      labels: ["fix", "bug"]
+    - title: Generator
+      labels: ["generator", "codegen"]
+    - title: Runtimes
+      labels: ["runtime", "rust", "go"]
+    - title: Documentation
+      labels: ["docs", "documentation"]
+    - title: Maintenance
+      labels: ["chore", "refactor", "ci", "test"]
+    - title: Dependencies
+      labels: ["dependencies"]
+    - title: Other changes
+      labels: ["*"]

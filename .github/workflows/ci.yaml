@@ -1,0 +1,146 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+    tags: ["v*"]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+# Default-deny: a job that declares nothing gets read, and nothing here needs
+# more than that.
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  protos:
+    # The protos are the input to everything else, and both linters run because
+    # they check different things: buf covers style and wire-compatibility
+    # hazards, api-linter covers AIP conformance. Where they disagree, AIP wins
+    # and examples/protobuf/buf.yaml documents the exception.
+    #
+    # This matters more here than in an ordinary repository: middleware
+    # selectors dispatch on AIP method patterns and OpenAPI path expansion needs
+    # google.api.resource patterns to be right, so the generator's good
+    # behaviour is earned by the protos being linted.
+    name: Protos
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: bufbuild/buf-action@v1
+        with:
+          setup_only: true
+      - uses: actions/setup-go@v7
+        with:
+          go-version-file: transcode-go/go.mod
+          cache: true
+      - name: Install api-linter
+        run: go install github.com/googleapis/api-linter/cmd/api-linter@latest
+      - uses: extractions/setup-just@v4
+      - run: just lint-protos
+
+  rust:
+    name: Rust
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+      - uses: Swatinem/rust-cache@v2
+      - name: Format
+        run: cargo fmt --all --check
+      - name: Clippy
+        # Denied rather than warned: the workspace lints require documentation
+        # on every public item, and a warning nobody fails on is a rule nobody
+        # follows.
+        run: cargo clippy --workspace --all-targets --all-features -- -D warnings
+      - name: Test
+        # --all-features so the HTTP/3 test runs: it drives a real h3 client
+        # over QUIC and asserts the body is byte-identical to HTTP/1.1, which is
+        # the only check that the transport carries the response rather than
+        # interpreting it.
+        run: cargo test --workspace --all-features
+
+  go:
+    name: Go
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-go@v7
+        with:
+          go-version-file: transcode-go/go.mod
+          cache: true
+      - uses: extractions/setup-just@v4
+      - name: Lint
+        run: just lint-go
+      - name: Runtime
+        run: just test-go
+      - name: Generator
+        # Includes the cross-target agreement and determinism checks: that the
+        # Rust and Go tables describe the same API in the same order, and that
+        # generating twice is byte-identical.
+        run: just test-plugin
+      - name: Example
+        run: just test-example-go
+
+  generated:
+    # Fails if the committed generated code does not match what the generator
+    # emits today.
+    #
+    # A separate job so it is a named check on the pull request. Generated code
+    # that has drifted is not a test failure, it is a review problem: the diff a
+    # reviewer reads no longer describes what the build produces.
+    name: Generated code is current
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-go@v7
+        with:
+          go-version-file: plugin/go.mod
+          cache: true
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt
+      - uses: bufbuild/buf-action@v1
+        with:
+          setup_only: true
+      - name: Install protoc-gen-go
+        run: go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
+      - uses: extractions/setup-just@v4
+      - run: just check-gen
+
+  conformance:
+    # The end-to-end check, and the one this project exists to make possible:
+    # start the Rust and Go runtimes and put the same questions to both over a
+    # real socket.
+    #
+    # Neither runtime's own test suite can catch a disagreement between them —
+    # each is written against its own behaviour — and a generated route table
+    # that is internally consistent in both languages can still describe two
+    # different APIs.
+    name: Conformance (rust vs go)
+    runs-on: ubuntu-latest
+    needs: [rust, go]
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-go@v7
+        with:
+          go-version-file: transcode-go/go.mod
+          cache: true
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+      - uses: extractions/setup-just@v4
+      - name: Shell check
+        # The conformance run is a shell script that decides whether a release
+        # is safe; it is held to the same bar as the code it checks.
+        run: shellcheck scripts/conformance.sh scripts/lib/compare.sh
+      - run: just conformance
