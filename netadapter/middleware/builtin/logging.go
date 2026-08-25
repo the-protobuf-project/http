@@ -6,7 +6,7 @@ import (
 	"log/slog"
 	"time"
 
-	"github.com/the-protobuf-project/grpc-gateway-rs/netadapter/middleware"
+	"github.com/the-protobuf-project/http/netadapter/middleware"
 )
 
 // defaultSlowThreshold is the latency above which a successful call is worth

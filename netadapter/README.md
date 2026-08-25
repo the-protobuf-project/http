@@ -4,7 +4,7 @@ The Go runtime. It fronts a gRPC service with an AIP-native HTTP/JSON surface,
 executing the route table `protoc-gen-http` emits.
 
 ```go
-import "github.com/the-protobuf-project/grpc-gateway-rs/netadapter"
+import "github.com/the-protobuf-project/http/netadapter"
 
 adapter := netadapter.New(gateway.NewTable(), gateway.NewRegistry(), service, gateway.Domain,
     netadapter.Use(builtin.NewRecovery(logger)),

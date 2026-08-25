@@ -312,9 +312,9 @@ const file_music_v1_music_proto_rawDesc = "" +
 	"\x18AVAILABILITY_UNSPECIFIED\x10\x00\x12\x1a\n" +
 	"\x16AVAILABILITY_STREAMING\x10\x01\x12\x1e\n" +
 	"\x1aAVAILABILITY_DOWNLOAD_ONLY\x10\x02\x12\x1c\n" +
-	"\x18AVAILABILITY_UNAVAILABLE\x10\x03B\xb3\x01\n" +
+	"\x18AVAILABILITY_UNAVAILABLE\x10\x03B\xa8\x01\n" +
 	"\fcom.music.v1B\n" +
-	"MusicProtoP\x01ZVgithub.com/the-protobuf-project/grpc-gateway-rs/examples/music-go/gen/music/v1;musicv1\xa2\x02\x03MXX\xaa\x02\bMusic.V1\xca\x02\bMusic\\V1\xe2\x02\x14Music\\V1\\GPBMetadata\xea\x02\tMusic::V1b\x06proto3"
+	"MusicProtoP\x01ZKgithub.com/the-protobuf-project/http/examples/music-go/gen/music/v1;musicv1\xa2\x02\x03MXX\xaa\x02\bMusic.V1\xca\x02\bMusic\\V1\xe2\x02\x14Music\\V1\\GPBMetadata\xea\x02\tMusic::V1b\x06proto3"
 
 var (
 	file_music_v1_music_proto_rawDescOnce sync.Once

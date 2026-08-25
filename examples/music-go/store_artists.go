@@ -6,9 +6,9 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/the-protobuf-project/grpc-gateway-rs/examples/music-go/gateway"
-	"github.com/the-protobuf-project/grpc-gateway-rs/examples/music-go/gen/music/v1"
-	"github.com/the-protobuf-project/grpc-gateway-rs/netadapter/apierr"
+	"github.com/the-protobuf-project/http/examples/music-go/gateway"
+	"github.com/the-protobuf-project/http/examples/music-go/gen/music/v1"
+	"github.com/the-protobuf-project/http/netadapter/apierr"
 )
 
 // GetArtist returns one artist. (AIP-131)

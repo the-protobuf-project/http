@@ -6,7 +6,7 @@ package codec_test
 import (
 	"testing"
 
-	"github.com/the-protobuf-project/grpc-gateway-rs/netadapter/codec"
+	"github.com/the-protobuf-project/http/netadapter/codec"
 )
 
 // registry is a two-codec registry: JSON default, SSE streaming-only.

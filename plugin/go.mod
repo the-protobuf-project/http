@@ -1,4 +1,4 @@
-module github.com/the-protobuf-project/grpc-gateway-rs/plugin
+module github.com/the-protobuf-project/http/plugin
 
 go 1.26.4
 

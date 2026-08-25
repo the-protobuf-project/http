@@ -7,7 +7,7 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/the-protobuf-project/grpc-gateway-rs/netadapter/middleware"
+	"github.com/the-protobuf-project/http/netadapter/middleware"
 )
 
 // clientIPKey is the context key the resolved address is stored under.

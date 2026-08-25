@@ -15,7 +15,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/the-protobuf-project/grpc-gateway-rs/examples/music-go"
+	"github.com/the-protobuf-project/http/examples/music-go"
 )
 
 // serveStream runs a streaming request, reporting whether the handler

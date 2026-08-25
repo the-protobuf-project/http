@@ -5,7 +5,7 @@ package middleware
 import (
 	"fmt"
 
-	"github.com/the-protobuf-project/grpc-gateway-rs/netadapter/route"
+	"github.com/the-protobuf-project/http/netadapter/route"
 )
 
 // entry is one registered interceptor and the methods it applies to.

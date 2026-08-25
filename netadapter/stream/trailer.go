@@ -7,7 +7,7 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/the-protobuf-project/grpc-gateway-rs/netadapter/apierr"
+	"github.com/the-protobuf-project/http/netadapter/apierr"
 )
 
 // Advertised is the value of the Trailer response header.

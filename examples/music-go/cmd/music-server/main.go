@@ -19,10 +19,10 @@ import (
 	"os/signal"
 	"time"
 
-	"github.com/the-protobuf-project/grpc-gateway-rs/examples/music-go"
-	"github.com/the-protobuf-project/grpc-gateway-rs/netadapter"
-	"github.com/the-protobuf-project/grpc-gateway-rs/netadapter/middleware"
-	"github.com/the-protobuf-project/grpc-gateway-rs/netadapter/middleware/builtin"
+	"github.com/the-protobuf-project/http/examples/music-go"
+	"github.com/the-protobuf-project/http/netadapter"
+	"github.com/the-protobuf-project/http/netadapter/middleware"
+	"github.com/the-protobuf-project/http/netadapter/middleware/builtin"
 )
 
 // shutdownGrace is how long in-flight requests have to finish on a signal.

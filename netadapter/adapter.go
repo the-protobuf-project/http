@@ -5,10 +5,10 @@ package netadapter
 import (
 	"net/http"
 
-	"github.com/the-protobuf-project/grpc-gateway-rs/netadapter/apierr"
-	"github.com/the-protobuf-project/grpc-gateway-rs/netadapter/codec"
-	"github.com/the-protobuf-project/grpc-gateway-rs/netadapter/middleware"
-	"github.com/the-protobuf-project/grpc-gateway-rs/netadapter/route"
+	"github.com/the-protobuf-project/http/netadapter/apierr"
+	"github.com/the-protobuf-project/http/netadapter/codec"
+	"github.com/the-protobuf-project/http/netadapter/middleware"
+	"github.com/the-protobuf-project/http/netadapter/route"
 )
 
 // Dispatcher serves a resolved unary call. Generated code implements it by

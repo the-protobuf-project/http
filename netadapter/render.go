@@ -7,8 +7,8 @@ import (
 	"errors"
 	"net/http"
 
-	"github.com/the-protobuf-project/grpc-gateway-rs/netadapter/apierr"
-	"github.com/the-protobuf-project/grpc-gateway-rs/netadapter/route"
+	"github.com/the-protobuf-project/http/netadapter/apierr"
+	"github.com/the-protobuf-project/http/netadapter/route"
 )
 
 // renderError writes any failure as an AIP-193 response.

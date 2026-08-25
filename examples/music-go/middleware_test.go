@@ -12,11 +12,11 @@ import (
 	"testing"
 	"time"
 
-	"github.com/the-protobuf-project/grpc-gateway-rs/examples/music-go"
-	"github.com/the-protobuf-project/grpc-gateway-rs/netadapter"
-	"github.com/the-protobuf-project/grpc-gateway-rs/netadapter/apierr"
-	"github.com/the-protobuf-project/grpc-gateway-rs/netadapter/middleware"
-	"github.com/the-protobuf-project/grpc-gateway-rs/netadapter/middleware/builtin"
+	"github.com/the-protobuf-project/http/examples/music-go"
+	"github.com/the-protobuf-project/http/netadapter"
+	"github.com/the-protobuf-project/http/netadapter/apierr"
+	"github.com/the-protobuf-project/http/netadapter/middleware"
+	"github.com/the-protobuf-project/http/netadapter/middleware/builtin"
 )
 
 // recorder is an interceptor that records which methods reached it.

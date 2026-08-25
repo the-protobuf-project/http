@@ -7,9 +7,9 @@ package music
 // the generator has to produce, and proves the runtime works end to end.
 
 import (
-	"github.com/the-protobuf-project/grpc-gateway-rs/examples/music-go/gateway"
-	"github.com/the-protobuf-project/grpc-gateway-rs/netadapter"
-	"github.com/the-protobuf-project/grpc-gateway-rs/netadapter/apierr"
+	"github.com/the-protobuf-project/http/examples/music-go/gateway"
+	"github.com/the-protobuf-project/http/netadapter"
+	"github.com/the-protobuf-project/http/netadapter/apierr"
 )
 
 // Service serves the music catalog over the generated route table.

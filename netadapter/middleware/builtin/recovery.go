@@ -5,7 +5,7 @@ package builtin
 import (
 	"log/slog"
 
-	"github.com/the-protobuf-project/grpc-gateway-rs/netadapter/middleware"
+	"github.com/the-protobuf-project/http/netadapter/middleware"
 )
 
 // Recovery records a panic as a completed call.

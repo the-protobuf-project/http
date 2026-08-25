@@ -5,7 +5,7 @@ package netadapter
 import (
 	"net/http"
 
-	"github.com/the-protobuf-project/grpc-gateway-rs/netadapter/apierr"
+	"github.com/the-protobuf-project/http/netadapter/apierr"
 )
 
 // Reply is a rendered HTTP response.

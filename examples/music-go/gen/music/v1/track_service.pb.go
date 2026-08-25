@@ -41,8 +41,8 @@ const file_music_v1_track_service_proto_rawDesc = "" +
 	"\vUpdateTrack\x12\x1c.music.v1.UpdateTrackRequest\x1a\x0f.music.v1.Track\"F\xdaA\x11track,update_mask\x82\xd3\xe4\x93\x02,:\x05track2#/v1/{track.name=artists/*/tracks/*}\x12q\n" +
 	"\vDeleteTrack\x12\x1c.music.v1.DeleteTrackRequest\x1a\x16.google.protobuf.Empty\",\xdaA\x04name\x82\xd3\xe4\x93\x02\x1f*\x1d/v1/{name=artists/*/tracks/*}\x12s\n" +
 	"\rWithdrawTrack\x12\x1e.music.v1.WithdrawTrackRequest\x1a\x0f.music.v1.Track\"1\x82\xd3\xe4\x93\x02+:\x01*\"&/v1/{name=artists/*/tracks/*}:withdraw\x12y\n" +
-	"\vWatchTracks\x12\x1c.music.v1.WatchTracksRequest\x1a\x1d.music.v1.WatchTracksResponse\"+\x82\xd3\xe4\x93\x02%\x12#/v1/{parent=artists/*}/tracks:watch0\x01\x1a<\xcaA\x11music.example.com\xd2A%https://www.googleapis.com/auth/musicB\xba\x01\n" +
-	"\fcom.music.v1B\x11TrackServiceProtoP\x01ZVgithub.com/the-protobuf-project/grpc-gateway-rs/examples/music-go/gen/music/v1;musicv1\xa2\x02\x03MXX\xaa\x02\bMusic.V1\xca\x02\bMusic\\V1\xe2\x02\x14Music\\V1\\GPBMetadata\xea\x02\tMusic::V1b\x06proto3"
+	"\vWatchTracks\x12\x1c.music.v1.WatchTracksRequest\x1a\x1d.music.v1.WatchTracksResponse\"+\x82\xd3\xe4\x93\x02%\x12#/v1/{parent=artists/*}/tracks:watch0\x01\x1a<\xcaA\x11music.example.com\xd2A%https://www.googleapis.com/auth/musicB\xaf\x01\n" +
+	"\fcom.music.v1B\x11TrackServiceProtoP\x01ZKgithub.com/the-protobuf-project/http/examples/music-go/gen/music/v1;musicv1\xa2\x02\x03MXX\xaa\x02\bMusic.V1\xca\x02\bMusic\\V1\xe2\x02\x14Music\\V1\\GPBMetadata\xea\x02\tMusic::V1b\x06proto3"
 
 var file_music_v1_track_service_proto_goTypes = []any{
 	(*GetTrackRequest)(nil),      // 0: music.v1.GetTrackRequest

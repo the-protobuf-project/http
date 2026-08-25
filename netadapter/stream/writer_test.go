@@ -8,9 +8,9 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/the-protobuf-project/grpc-gateway-rs/netadapter/apierr"
-	"github.com/the-protobuf-project/grpc-gateway-rs/netadapter/codec"
-	"github.com/the-protobuf-project/grpc-gateway-rs/netadapter/stream"
+	"github.com/the-protobuf-project/http/netadapter/apierr"
+	"github.com/the-protobuf-project/http/netadapter/codec"
+	"github.com/the-protobuf-project/http/netadapter/stream"
 )
 
 // encodeError renders an envelope, standing in for the negotiated codec.

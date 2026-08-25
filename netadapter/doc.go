@@ -37,7 +37,7 @@
 // is specified in the repository README and is shared with the Rust runtime,
 // which the conformance tests hold both to.
 //
-// [route]: https://pkg.go.dev/github.com/the-protobuf-project/grpc-gateway-rs/netadapter/route
-// [codec]: https://pkg.go.dev/github.com/the-protobuf-project/grpc-gateway-rs/netadapter/codec
-// [stream]: https://pkg.go.dev/github.com/the-protobuf-project/grpc-gateway-rs/netadapter/stream
+// [route]: https://pkg.go.dev/github.com/the-protobuf-project/http/netadapter/route
+// [codec]: https://pkg.go.dev/github.com/the-protobuf-project/http/netadapter/codec
+// [stream]: https://pkg.go.dev/github.com/the-protobuf-project/http/netadapter/stream
 package netadapter

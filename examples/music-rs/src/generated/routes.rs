@@ -7,7 +7,7 @@
 // This file is the runtime's whole input: a route table it executes.
 // It parses no templates and reads no descriptors.
 //
-// grpc-gateway-rs — https://github.com/the-protobuf-project/grpc-gateway-rs
+// http — https://github.com/the-protobuf-project/http
 //! The route table, emitted most-specific-first.
 //!
 //! Order is not incidental. The generator sorts by the precedence rules in
@@ -15,8 +15,16 @@
 //! dominating, so the runtime can scan linearly and take the first match.
 
 use super::{
-    CAP_ARTIST_NAME_1_3, CAP_NAME_1_3, CAP_NAME_1_5, CAP_PARENT_1_3, CAP_TRACK_NAME_1_5, M_ARTISTS,
-    M_ARTISTS_ANY, M_ARTISTS_ANY_TRACKS, M_ARTISTS_ANY_TRACKS_ANY, Method, NONE,
+    Method, NONE,
+    CAP_NAME_1_5,
+    CAP_TRACK_NAME_1_5,
+    CAP_PARENT_1_3,
+    CAP_NAME_1_3,
+    CAP_ARTIST_NAME_1_3,
+    M_ARTISTS_ANY_TRACKS_ANY,
+    M_ARTISTS_ANY_TRACKS,
+    M_ARTISTS_ANY,
+    M_ARTISTS,
 };
 use grpc_http::route::{Capture, Match, Route};
 

@@ -8,7 +8,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/the-protobuf-project/grpc-gateway-rs/netadapter/apierr"
+	"github.com/the-protobuf-project/http/netadapter/apierr"
 )
 
 // decode renders an error and parses it back, as a client would.

@@ -10,8 +10,8 @@ package music
 // protos.
 
 import (
-	"github.com/the-protobuf-project/grpc-gateway-rs/netadapter"
-	"github.com/the-protobuf-project/grpc-gateway-rs/netadapter/apierr"
+	"github.com/the-protobuf-project/http/netadapter"
+	"github.com/the-protobuf-project/http/netadapter/apierr"
 	"google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/proto"
 )

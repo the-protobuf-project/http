@@ -9,8 +9,8 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/the-protobuf-project/grpc-gateway-rs/examples/music-go/gen/music/v1"
-	"github.com/the-protobuf-project/grpc-gateway-rs/netadapter"
+	"github.com/the-protobuf-project/http/examples/music-go/gen/music/v1"
+	"github.com/the-protobuf-project/http/netadapter"
 )
 
 // getArtist serves GET /v1/{name=artists/*}.

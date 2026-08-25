@@ -7,7 +7,7 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/the-protobuf-project/grpc-gateway-rs/netadapter/route"
+	"github.com/the-protobuf-project/http/netadapter/route"
 )
 
 // artistsAny is `/v1/artists/*`, binding the whole thing as `name`.

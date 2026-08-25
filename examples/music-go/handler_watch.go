@@ -4,9 +4,9 @@ package music
 // rule is actually exercised.
 
 import (
-	"github.com/the-protobuf-project/grpc-gateway-rs/examples/music-go/gen/music/v1"
-	"github.com/the-protobuf-project/grpc-gateway-rs/netadapter"
-	"github.com/the-protobuf-project/grpc-gateway-rs/netadapter/apierr"
+	"github.com/the-protobuf-project/http/examples/music-go/gen/music/v1"
+	"github.com/the-protobuf-project/http/netadapter"
+	"github.com/the-protobuf-project/http/netadapter/apierr"
 )
 
 // FailAfter is a query parameter the example honours to fail a stream

@@ -5,7 +5,7 @@ package music
 import (
 	"sync"
 
-	"github.com/the-protobuf-project/grpc-gateway-rs/examples/music-go/gateway"
+	"github.com/the-protobuf-project/http/examples/music-go/gateway"
 )
 
 // Domain returns the API's error domain, which the generated table holds.

@@ -26,8 +26,8 @@ import (
 	"runtime/debug"
 	"strings"
 
-	"github.com/the-protobuf-project/grpc-gateway-rs/plugin/gateway"
-	"github.com/the-protobuf-project/grpc-gateway-rs/plugin/target"
+	"github.com/the-protobuf-project/http/plugin/gateway"
+	"github.com/the-protobuf-project/http/plugin/target"
 	"github.com/the-protobuf-project/protokit/factory"
 	"github.com/the-protobuf-project/protokit/header"
 	"google.golang.org/protobuf/compiler/protogen"
@@ -53,14 +53,15 @@ var modulePath = ""
 
 // projectCredit returns the banner's credit line.
 //
-// Derived from the module path rather than written out, because header.SetTool
-// derives the repository by stripping "protoc-gen-" from the binary name — which
-// gives "http", and there is no repository by that name. Hardcoding the right
-// answer instead would just move the problem: a repository rename would leave a
-// dead URL behind with nothing to catch it, since nothing builds the link.
+// Derived from the module path rather than written out. header.SetTool derives
+// the repository by stripping "protoc-gen-" from the binary name, which gives
+// "http" — the right answer today, but only because the repository happens to be
+// named after this binary. The two names are free to move apart, and when they
+// do the derivation silently starts crediting a repository that does not exist.
 //
-// The module path is the one place that must already be correct for the code to
-// compile at all, so deriving from it means a rename is a single edit in go.mod.
+// The module path is the one thing that must already be correct for the code to
+// compile at all, so deriving from it means a rename of either name is a single
+// edit in go.mod with nothing left to notice.
 func projectCredit() string {
 	path := modulePath
 	if path == "" {

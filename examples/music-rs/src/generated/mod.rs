@@ -7,7 +7,7 @@
 // This file is the runtime's whole input: a route table it executes.
 // It parses no templates and reads no descriptors.
 //
-// grpc-gateway-rs — https://github.com/the-protobuf-project/grpc-gateway-rs
+// http — https://github.com/the-protobuf-project/http
 //! The generated route table for this API.
 //!
 //! Two properties the generator guarantees, both load-bearing:
@@ -23,9 +23,7 @@ use grpc_http::route::Capture;
 mod matches;
 mod routes;
 
-pub(crate) use matches::{
-    M_ARTISTS, M_ARTISTS_ANY, M_ARTISTS_ANY_TRACKS, M_ARTISTS_ANY_TRACKS_ANY,
-};
+pub(crate) use matches::{M_ARTISTS_ANY_TRACKS_ANY, M_ARTISTS_ANY_TRACKS, M_ARTISTS_ANY, M_ARTISTS};
 pub use routes::ROUTES;
 
 /// Every method of every service, in handler-index order.
@@ -152,52 +150,39 @@ impl Method {
 pub const DOMAIN: &str = "music.example.com";
 
 /// The codecs this gateway was generated with, default first.
-pub static CODECS: &[CodecEntry] = &[CodecEntry {
-    name: "json",
-    media_types: &["application/json"],
-    framing: Framing::JsonArray,
-    index: 0,
-}];
+pub static CODECS: &[CodecEntry] = &[
+    CodecEntry {
+        name: "json",
+        media_types: &["application/json"],
+        framing: Framing::JsonArray,
+        index: 0,
+    },
+];
 
 /// No captures, for the fully-literal routes.
 pub(crate) static NONE: &[Capture] = &[];
 
 /// name in /v1/{name=artists/*/tracks/*}:withdraw
-pub(crate) static CAP_NAME_1_5: &[Capture] = &[Capture {
-    field: &["name"],
-    json: "name",
-    start: 1,
-    end: 5,
-}];
+pub(crate) static CAP_NAME_1_5: &[Capture] = &[
+    Capture { field: &["name"], json: "name", start: 1, end: 5 },
+];
 
 /// track.name in /v1/{track.name=artists/*/tracks/*}
-pub(crate) static CAP_TRACK_NAME_1_5: &[Capture] = &[Capture {
-    field: &["track", "name"],
-    json: "track.name",
-    start: 1,
-    end: 5,
-}];
+pub(crate) static CAP_TRACK_NAME_1_5: &[Capture] = &[
+    Capture { field: &["track", "name"], json: "track.name", start: 1, end: 5 },
+];
 
 /// parent in /v1/{parent=artists/*}/tracks:watch
-pub(crate) static CAP_PARENT_1_3: &[Capture] = &[Capture {
-    field: &["parent"],
-    json: "parent",
-    start: 1,
-    end: 3,
-}];
+pub(crate) static CAP_PARENT_1_3: &[Capture] = &[
+    Capture { field: &["parent"], json: "parent", start: 1, end: 3 },
+];
 
 /// name in /v1/{name=artists/*}
-pub(crate) static CAP_NAME_1_3: &[Capture] = &[Capture {
-    field: &["name"],
-    json: "name",
-    start: 1,
-    end: 3,
-}];
+pub(crate) static CAP_NAME_1_3: &[Capture] = &[
+    Capture { field: &["name"], json: "name", start: 1, end: 3 },
+];
 
 /// artist.name in /v1/{artist.name=artists/*}
-pub(crate) static CAP_ARTIST_NAME_1_3: &[Capture] = &[Capture {
-    field: &["artist", "name"],
-    json: "artist.name",
-    start: 1,
-    end: 3,
-}];
+pub(crate) static CAP_ARTIST_NAME_1_3: &[Capture] = &[
+    Capture { field: &["artist", "name"], json: "artist.name", start: 1, end: 3 },
+];

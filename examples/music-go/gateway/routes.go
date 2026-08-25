@@ -9,10 +9,10 @@
 // This file is the runtime's whole input: a route table it executes.
 // It parses no templates and reads no descriptors.
 //
-// grpc-gateway-rs — https://github.com/the-protobuf-project/grpc-gateway-rs
+// http — https://github.com/the-protobuf-project/http
 package gateway
 
-import "github.com/the-protobuf-project/grpc-gateway-rs/netadapter/route"
+import "github.com/the-protobuf-project/http/netadapter/route"
 
 // Routes is every binding this API declares, most specific first.
 //

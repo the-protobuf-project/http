@@ -5,8 +5,8 @@ package builtin
 import (
 	"strings"
 
-	"github.com/the-protobuf-project/grpc-gateway-rs/netadapter/apierr"
-	"github.com/the-protobuf-project/grpc-gateway-rs/netadapter/middleware"
+	"github.com/the-protobuf-project/http/netadapter/apierr"
+	"github.com/the-protobuf-project/http/netadapter/middleware"
 )
 
 // identityKey is the context key the resolved identity is stored under.

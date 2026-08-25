@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/the-protobuf-project/grpc-gateway-rs/netadapter/middleware"
+	"github.com/the-protobuf-project/http/netadapter/middleware"
 )
 
 // defaultMaxDeadline is the ceiling a client may request.

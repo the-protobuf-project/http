@@ -5,7 +5,7 @@ package stream
 import (
 	"encoding/binary"
 
-	"github.com/the-protobuf-project/grpc-gateway-rs/netadapter/codec"
+	"github.com/the-protobuf-project/http/netadapter/codec"
 )
 
 // Framer renders messages and errors into one framing's byte layout.

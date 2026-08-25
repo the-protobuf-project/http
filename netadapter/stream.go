@@ -6,8 +6,8 @@ package netadapter
 import (
 	"net/http"
 
-	"github.com/the-protobuf-project/grpc-gateway-rs/netadapter/apierr"
-	"github.com/the-protobuf-project/grpc-gateway-rs/netadapter/stream"
+	"github.com/the-protobuf-project/http/netadapter/apierr"
+	"github.com/the-protobuf-project/http/netadapter/stream"
 )
 
 // Stream is the handle a streaming handler writes messages through.

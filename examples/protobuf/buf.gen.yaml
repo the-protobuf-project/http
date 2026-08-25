@@ -21,7 +21,7 @@ managed:
     # than published anywhere, so the go_package in the protos — which names a
     # module that does not exist — is overridden here.
     - file_option: go_package_prefix
-      value: github.com/the-protobuf-project/grpc-gateway-rs/examples/music-go/gen
+      value: github.com/the-protobuf-project/http/examples/music-go/gen
 plugins:
   # The messages themselves. protoc-gen-go emits the structs and protojson
   # marshals them, so the JSON mapping in README §4.1 — 64-bit integers as

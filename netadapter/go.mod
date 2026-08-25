@@ -1,3 +1,3 @@
-module github.com/the-protobuf-project/grpc-gateway-rs/netadapter
+module github.com/the-protobuf-project/http/netadapter
 
 go 1.26.4

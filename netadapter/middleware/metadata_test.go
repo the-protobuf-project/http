@@ -8,7 +8,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/the-protobuf-project/grpc-gateway-rs/netadapter/middleware"
+	"github.com/the-protobuf-project/http/netadapter/middleware"
 )
 
 func TestIncomingMappingSeparatesTheThreeCases(t *testing.T) {

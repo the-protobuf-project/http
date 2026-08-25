@@ -3,7 +3,7 @@ package stream
 // termination.go says how a stream ended and what the transport must do about
 // it.
 
-import "github.com/the-protobuf-project/grpc-gateway-rs/netadapter/apierr"
+import "github.com/the-protobuf-project/http/netadapter/apierr"
 
 // Outcome is how a stream ended.
 type Outcome uint8

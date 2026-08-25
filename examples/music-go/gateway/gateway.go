@@ -9,7 +9,7 @@
 // This file is the runtime's whole input: a route table it executes.
 // It parses no templates and reads no descriptors.
 //
-// grpc-gateway-rs — https://github.com/the-protobuf-project/grpc-gateway-rs
+// http — https://github.com/the-protobuf-project/http
 // Package gateway is the generated route table for this API.
 //
 // Two properties the generator guarantees, both load-bearing:
@@ -21,8 +21,8 @@
 package gateway
 
 import (
-	"github.com/the-protobuf-project/grpc-gateway-rs/netadapter/codec"
-	"github.com/the-protobuf-project/grpc-gateway-rs/netadapter/route"
+	"github.com/the-protobuf-project/http/netadapter/codec"
+	"github.com/the-protobuf-project/http/netadapter/route"
 )
 
 // Domain is the API's error domain, stamped into every AIP-193 ErrorInfo.

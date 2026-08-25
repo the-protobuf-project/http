@@ -6,7 +6,7 @@ package route_test
 import (
 	"testing"
 
-	"github.com/the-protobuf-project/grpc-gateway-rs/netadapter/route"
+	"github.com/the-protobuf-project/http/netadapter/route"
 )
 
 // testTable is a small table in the order the generator would emit it: most

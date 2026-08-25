@@ -37,8 +37,8 @@ const file_music_v1_artist_service_proto_rawDesc = "" +
 	"\vListArtists\x12\x1c.music.v1.ListArtistsRequest\x1a\x1d.music.v1.ListArtistsResponse\"\x13\x82\xd3\xe4\x93\x02\r\x12\v/v1/artists\x12o\n" +
 	"\fCreateArtist\x12\x1d.music.v1.CreateArtistRequest\x1a\x10.music.v1.Artist\".\xdaA\x10artist,artist_id\x82\xd3\xe4\x93\x02\x15:\x06artist\"\v/v1/artists\x12\x81\x01\n" +
 	"\fUpdateArtist\x12\x1d.music.v1.UpdateArtistRequest\x1a\x10.music.v1.Artist\"@\xdaA\x12artist,update_mask\x82\xd3\xe4\x93\x02%:\x06artist2\x1b/v1/{artist.name=artists/*}\x12j\n" +
-	"\fDeleteArtist\x12\x1d.music.v1.DeleteArtistRequest\x1a\x16.google.protobuf.Empty\"#\xdaA\x04name\x82\xd3\xe4\x93\x02\x16*\x14/v1/{name=artists/*}\x1a<\xcaA\x11music.example.com\xd2A%https://www.googleapis.com/auth/musicB\xbb\x01\n" +
-	"\fcom.music.v1B\x12ArtistServiceProtoP\x01ZVgithub.com/the-protobuf-project/grpc-gateway-rs/examples/music-go/gen/music/v1;musicv1\xa2\x02\x03MXX\xaa\x02\bMusic.V1\xca\x02\bMusic\\V1\xe2\x02\x14Music\\V1\\GPBMetadata\xea\x02\tMusic::V1b\x06proto3"
+	"\fDeleteArtist\x12\x1d.music.v1.DeleteArtistRequest\x1a\x16.google.protobuf.Empty\"#\xdaA\x04name\x82\xd3\xe4\x93\x02\x16*\x14/v1/{name=artists/*}\x1a<\xcaA\x11music.example.com\xd2A%https://www.googleapis.com/auth/musicB\xb0\x01\n" +
+	"\fcom.music.v1B\x12ArtistServiceProtoP\x01ZKgithub.com/the-protobuf-project/http/examples/music-go/gen/music/v1;musicv1\xa2\x02\x03MXX\xaa\x02\bMusic.V1\xca\x02\bMusic\\V1\xe2\x02\x14Music\\V1\\GPBMetadata\xea\x02\tMusic::V1b\x06proto3"
 
 var file_music_v1_artist_service_proto_goTypes = []any{
 	(*GetArtistRequest)(nil),    // 0: music.v1.GetArtistRequest

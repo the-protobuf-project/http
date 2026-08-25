@@ -3,8 +3,8 @@ package music
 // handler_tracks.go holds the track method handlers.
 
 import (
-	"github.com/the-protobuf-project/grpc-gateway-rs/examples/music-go/gen/music/v1"
-	"github.com/the-protobuf-project/grpc-gateway-rs/netadapter"
+	"github.com/the-protobuf-project/http/examples/music-go/gen/music/v1"
+	"github.com/the-protobuf-project/http/netadapter"
 )
 
 // getTrack serves GET /v1/{name=artists/*/tracks/*}.

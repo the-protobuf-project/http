@@ -7,7 +7,7 @@
 // This file is the runtime's whole input: a route table it executes.
 // It parses no templates and reads no descriptors.
 //
-// grpc-gateway-rs — https://github.com/the-protobuf-project/grpc-gateway-rs
+// http — https://github.com/the-protobuf-project/http
 //! The flattened match sequences each route walks.
 //!
 //! Shared between routes because several bindings differ only in HTTP method:
@@ -40,4 +40,8 @@ pub(crate) static M_ARTISTS_ANY: &[Match] = &[
 ];
 
 /// `/v1/artists`
-pub(crate) static M_ARTISTS: &[Match] = &[Match::Literal("v1"), Match::Literal("artists")];
+pub(crate) static M_ARTISTS: &[Match] = &[
+    Match::Literal("v1"),
+    Match::Literal("artists"),
+];
+

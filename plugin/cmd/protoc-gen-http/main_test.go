@@ -11,18 +11,21 @@ func TestProjectCreditFollowsTheModulePath(t *testing.T) {
 
 	cases := []struct{ path, want string }{
 		{
-			"github.com/the-protobuf-project/grpc-gateway-rs/plugin",
-			"grpc-gateway-rs — https://github.com/the-protobuf-project/grpc-gateway-rs",
+			// Today: the repository is named after the binary, so this agrees
+			// with what header.SetTool would have derived on its own.
+			"github.com/the-protobuf-project/http/plugin",
+			"http — https://github.com/the-protobuf-project/http",
 		},
 		{
-			// After a rename, with no other edit.
+			// After a rename, with no other edit. This is the case SetTool gets
+			// wrong: it would still credit ".../http".
 			"github.com/the-protobuf-project/aip-http/plugin",
 			"aip-http — https://github.com/the-protobuf-project/aip-http",
 		},
 		{
 			// A non-nested layout still resolves.
-			"github.com/the-protobuf-project/grpc-gateway-rs",
-			"grpc-gateway-rs — https://github.com/the-protobuf-project/grpc-gateway-rs",
+			"github.com/the-protobuf-project/http",
+			"http — https://github.com/the-protobuf-project/http",
 		},
 	}
 	for _, tc := range cases {

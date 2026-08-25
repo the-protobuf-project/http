@@ -3,8 +3,8 @@ package builtin
 // validate.go rejects an invalid request before the RPC is dialled.
 
 import (
-	"github.com/the-protobuf-project/grpc-gateway-rs/netadapter/apierr"
-	"github.com/the-protobuf-project/grpc-gateway-rs/netadapter/middleware"
+	"github.com/the-protobuf-project/http/netadapter/apierr"
+	"github.com/the-protobuf-project/http/netadapter/middleware"
 )
 
 // Validator checks a bound request message.

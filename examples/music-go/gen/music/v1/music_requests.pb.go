@@ -921,8 +921,8 @@ const file_music_v1_music_requests_proto_rawDesc = "" +
 	"\x12WatchTracksRequest\x127\n" +
 	"\x06parent\x18\x01 \x01(\tB\x1f\xe0A\x02\xfaA\x19\x12\x17music.example.com/TrackR\x06parent\"<\n" +
 	"\x13WatchTracksResponse\x12%\n" +
-	"\x05track\x18\x01 \x01(\v2\x0f.music.v1.TrackR\x05trackB\xbb\x01\n" +
-	"\fcom.music.v1B\x12MusicRequestsProtoP\x01ZVgithub.com/the-protobuf-project/grpc-gateway-rs/examples/music-go/gen/music/v1;musicv1\xa2\x02\x03MXX\xaa\x02\bMusic.V1\xca\x02\bMusic\\V1\xe2\x02\x14Music\\V1\\GPBMetadata\xea\x02\tMusic::V1b\x06proto3"
+	"\x05track\x18\x01 \x01(\v2\x0f.music.v1.TrackR\x05trackB\xb0\x01\n" +
+	"\fcom.music.v1B\x12MusicRequestsProtoP\x01ZKgithub.com/the-protobuf-project/http/examples/music-go/gen/music/v1;musicv1\xa2\x02\x03MXX\xaa\x02\bMusic.V1\xca\x02\bMusic\\V1\xe2\x02\x14Music\\V1\\GPBMetadata\xea\x02\tMusic::V1b\x06proto3"
 
 var (
 	file_music_v1_music_requests_proto_rawDescOnce sync.Once

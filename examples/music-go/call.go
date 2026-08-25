@@ -11,8 +11,8 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/the-protobuf-project/grpc-gateway-rs/netadapter"
-	"github.com/the-protobuf-project/grpc-gateway-rs/netadapter/apierr"
+	"github.com/the-protobuf-project/http/netadapter"
+	"github.com/the-protobuf-project/http/netadapter/apierr"
 )
 
 // queryInt reads a query parameter as an int, defaulting to zero when absent.

@@ -5,7 +5,7 @@ package netadapter
 import (
 	"log/slog"
 
-	"github.com/the-protobuf-project/grpc-gateway-rs/netadapter/middleware"
+	"github.com/the-protobuf-project/http/netadapter/middleware"
 )
 
 // defaultMaxRequestBody is the body limit an adapter starts with: 4 MiB, which

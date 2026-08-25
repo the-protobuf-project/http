@@ -1,4 +1,4 @@
-# grpc-gateway-rs
+# http
 
 An AIP-native HTTP/JSON surface for gRPC services, generated from
 `google.api.http` annotations. One generator, several runtimes, and an OpenAPI
@@ -91,7 +91,7 @@ curl -i 'http://127.0.0.1:8080/v1/artists/nobody/tracks:watch'  # 404, not a 200
 ## Repository layout
 
 ```
-grpc-gateway-rs/
+http/
   Cargo.toml            Rust workspace root
   Justfile              every task; `just` lists them
   go.work               local-only, gitignored — see below

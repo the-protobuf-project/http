@@ -7,7 +7,7 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/the-protobuf-project/grpc-gateway-rs/netadapter/middleware"
+	"github.com/the-protobuf-project/http/netadapter/middleware"
 )
 
 // defaultMaxAge is how long a browser may cache a preflight, in seconds.

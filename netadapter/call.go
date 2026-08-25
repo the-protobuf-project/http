@@ -7,10 +7,10 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/the-protobuf-project/grpc-gateway-rs/netadapter/apierr"
-	"github.com/the-protobuf-project/grpc-gateway-rs/netadapter/codec"
-	"github.com/the-protobuf-project/grpc-gateway-rs/netadapter/middleware"
-	"github.com/the-protobuf-project/grpc-gateway-rs/netadapter/route"
+	"github.com/the-protobuf-project/http/netadapter/apierr"
+	"github.com/the-protobuf-project/http/netadapter/codec"
+	"github.com/the-protobuf-project/http/netadapter/middleware"
+	"github.com/the-protobuf-project/http/netadapter/route"
 )
 
 // Call is a resolved request, ready for a method handler.

@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/the-protobuf-project/grpc-gateway-rs/netadapter/apierr"
+	"github.com/the-protobuf-project/http/netadapter/apierr"
 )
 
 // Negotiation is what the request asked for, gathered from the parts that

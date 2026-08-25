@@ -2,7 +2,7 @@ package middleware
 
 // selector.go chooses which methods an interceptor applies to.
 
-import "github.com/the-protobuf-project/grpc-gateway-rs/netadapter/route"
+import "github.com/the-protobuf-project/http/netadapter/route"
 
 // Selector decides which methods an interceptor applies to.
 //

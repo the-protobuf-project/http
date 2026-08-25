@@ -6,8 +6,8 @@ package middleware_test
 import (
 	"testing"
 
-	"github.com/the-protobuf-project/grpc-gateway-rs/netadapter/middleware"
-	"github.com/the-protobuf-project/grpc-gateway-rs/netadapter/route"
+	"github.com/the-protobuf-project/http/netadapter/middleware"
+	"github.com/the-protobuf-project/http/netadapter/route"
 )
 
 // hook implements every phase, so a selection test can see it in each.
