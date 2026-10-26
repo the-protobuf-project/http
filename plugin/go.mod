@@ -3,7 +3,7 @@ module github.com/the-protobuf-project/http/plugin
 go 1.26.4
 
 require (
-	github.com/the-protobuf-project/protokit v1.3.1
+	github.com/the-protobuf-project/protokit v1.3.3
 	google.golang.org/protobuf v1.36.12
 )
 
