@@ -109,4 +109,117 @@ impl Error {
             [("method".into(), method.into())],
         )
     }
+
+    /// `413 Payload Too Large`: the body exceeded the configured limit.
+    ///
+    /// Decided by reading one byte past the limit rather than trusting
+    /// `Content-Length`, which a client controls and a chunked request omits.
+    #[must_use]
+    pub fn payload_too_large(limit: usize, domain: &str) -> Self {
+        Error::new(Code::InvalidArgument, "Request body is too large.")
+            .with_http(StatusCode::PAYLOAD_TOO_LARGE)
+            .with_error_info(
+                "PAYLOAD_TOO_LARGE",
+                domain,
+                [("limit".into(), limit.to_string())],
+            )
+    }
+
+    /// `400`: a path capture matched a route but could not be decoded.
+    ///
+    /// A 400 naming the field rather than a 404: the path matched, and the value
+    /// is what is wrong. "Not found" would send a caller looking for a resource
+    /// when the fix is their encoding.
+    #[must_use]
+    pub fn malformed_path(field: &str, description: &str, domain: &str, method: &str) -> Self {
+        Error::invalid_fields(
+            vec![FieldViolation {
+                field: field.to_string(),
+                description: description.to_string(),
+                reason: "MALFORMED_PATH".into(),
+            }],
+            "MALFORMED_PATH",
+            domain,
+            method,
+        )
+    }
+
+    /// `400`: the body could not be read or decoded.
+    #[must_use]
+    pub fn malformed_body(description: &str, domain: &str, method: &str) -> Self {
+        Error::new(Code::InvalidArgument, "Request body could not be decoded.").with_error_info(
+            "MALFORMED_BODY",
+            domain,
+            [
+                ("method".into(), method.into()),
+                ("detail".into(), description.into()),
+            ],
+        )
+    }
+
+    /// `400`: a body was sent to a method whose binding accepts none.
+    #[must_use]
+    pub fn unexpected_body(domain: &str, method: &str) -> Self {
+        Error::new(
+            Code::InvalidArgument,
+            "This method does not accept a request body.",
+        )
+        .with_error_info("MALFORMED_BODY", domain, [("method".into(), method.into())])
+    }
+
+    /// `400`: query parameters that bind to no field.
+    ///
+    /// Rejecting is the point: grpc-gateway discards unknown parameters, which
+    /// turns a typo in an update call into a silent no-op.
+    #[must_use]
+    pub fn unknown_query_parameter(names: &[&str], domain: &str, method: &str) -> Self {
+        Error::invalid_fields(
+            names
+                .iter()
+                .map(|name| FieldViolation {
+                    field: (*name).to_string(),
+                    description: format!("Unknown query parameter {name:?}."),
+                    reason: "UNKNOWN_QUERY_PARAMETER".into(),
+                })
+                .collect(),
+            "UNKNOWN_QUERY_PARAMETER",
+            domain,
+            method,
+        )
+    }
+
+    /// `400`: a `$`-prefixed query parameter that is not a system parameter.
+    ///
+    /// The prefix is reserved so a future system parameter cannot collide with a
+    /// field name; accepting an unknown one would let that future parameter
+    /// silently change what an existing request means.
+    #[must_use]
+    pub fn reserved_query_parameter(name: &str, domain: &str, method: &str) -> Self {
+        Error::new(
+            Code::InvalidArgument,
+            format!("Query parameter {name:?} is reserved."),
+        )
+        .with_error_info(
+            "UNKNOWN_QUERY_PARAMETER",
+            domain,
+            [
+                ("method".into(), method.into()),
+                ("parameter".into(), name.into()),
+            ],
+        )
+    }
+
+    /// `500`: the route table and the handler disagree about a capture.
+    ///
+    /// A generator bug rather than a caller error, so it is a 500, not a 400.
+    #[must_use]
+    pub fn binding_mismatch(field: &str, domain: &str, method: &str) -> Self {
+        Error::new(Code::Internal, format!("Route did not bind {field:?}."))
+            .with_http(StatusCode::INTERNAL_SERVER_ERROR)
+            .with_error_info(
+                "BINDING_MISMATCH",
+                domain,
+                [("method".into(), method.into())],
+            )
+    }
 }

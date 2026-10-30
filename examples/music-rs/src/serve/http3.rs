@@ -58,6 +58,7 @@ async fn serve_connection(
     handler: &Arc<Handler>,
     conn: quinn::Connection,
 ) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
+    let peer = conn.remote_address();
     let mut h3_conn = Connection::new(h3_quinn::Connection::new(conn)).await?;
 
     loop {
@@ -66,7 +67,7 @@ async fn serve_connection(
                 let (request, stream) = resolver.resolve_request().await?;
                 let handler = Arc::clone(handler);
                 tokio::spawn(async move {
-                    if let Err(err) = respond(&handler, request, stream).await {
+                    if let Err(err) = respond(&handler, peer, request, stream).await {
                         tracing::debug!(?err, "http/3 request failed");
                     }
                 });
@@ -81,6 +82,7 @@ async fn serve_connection(
 /// Reads one request body, calls the handler, and writes the response.
 async fn respond<S>(
     handler: &Handler,
+    peer: SocketAddr,
     request: Request<()>,
     mut stream: h3::server::RequestStream<S, Bytes>,
 ) -> Result<(), Box<dyn std::error::Error + Send + Sync>>
@@ -95,16 +97,34 @@ where
     let (parts, ()) = request.into_parts();
     let rebuilt = Request::from_parts(parts, http_body_util::Full::new(Bytes::from(body)));
 
-    let response = handle(handler, rebuilt).await;
-    let (parts, response_body) = response.into_parts();
+    let response = handle(handler, peer, rebuilt).await;
+    let (parts, mut response_body) = response.into_parts();
 
     stream
         .send_response(http::Response::from_parts(parts, ()))
         .await?;
 
-    let bytes = response_body.collect().await?.to_bytes();
-    if !bytes.is_empty() {
-        stream.send_data(bytes).await?;
+    // Frame by frame, so a stream reaches the client as it is produced. A
+    // body that ends in an error is a stream that failed after committing its
+    // status: the request stream is reset rather than finished, which is
+    // HTTP/3's truncation.
+    while let Some(frame) = response_body.frame().await {
+        let frame = match frame {
+            Ok(frame) => frame,
+            Err(_truncated) => {
+                stream.stop_stream(h3::error::Code::H3_INTERNAL_ERROR);
+                return Ok(());
+            }
+        };
+        match frame.into_data() {
+            Ok(data) => stream.send_data(data).await?,
+            Err(frame) => {
+                if let Ok(trailers) = frame.into_trailers() {
+                    stream.send_trailers(trailers).await?;
+                    return Ok(());
+                }
+            }
+        }
     }
     stream.finish().await?;
     Ok(())

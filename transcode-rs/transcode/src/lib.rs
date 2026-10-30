@@ -31,6 +31,9 @@
 
 pub mod codec;
 pub mod error;
+pub mod gateway;
 pub mod middleware;
 pub mod route;
 pub mod stream;
+
+pub use gateway::{Call, Dispatcher, Gateway, GatewayBody, Reply, Stream};

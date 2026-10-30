@@ -28,6 +28,7 @@ func newFile(model *ir.Model) (*fileData, error) {
 			FullName:     method.FullName,
 			Service:      method.Service,
 			Doc:          method.Doc,
+			Pattern:      method.Pattern,
 			Mutating:     method.Mutating,
 			ServerStream: method.ServerStream,
 			Index:        method.Index,

@@ -31,6 +31,7 @@ mod error;
 mod framing;
 mod media;
 mod negotiate;
+pub mod payload;
 mod registry;
 mod traits;
 
@@ -47,6 +48,7 @@ pub use error::CodecError;
 pub use framing::Framing;
 pub use media::MediaType;
 pub use negotiate::{Negotiation, request_codec, response_codec};
+pub use payload::Payload;
 pub use registry::{CodecEntry, CodecRegistry};
 pub use traits::{Codec, Decode, Encode};
 

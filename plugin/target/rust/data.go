@@ -32,6 +32,8 @@ type methodData struct {
 	Service string
 	// Doc is the HTTP binding, rendered as a doc comment.
 	Doc string
+	// Pattern is the transcode::middleware::MethodPattern variant, e.g. "Get".
+	Pattern string
 	// Mutating is whether the method changes state.
 	Mutating bool
 	// ServerStream is whether the method streams its response.
