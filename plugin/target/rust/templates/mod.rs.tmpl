@@ -9,7 +9,8 @@
 //!   registration order at request time.
 
 use transcode::codec::{CodecEntry, Framing};
-use transcode::route::Capture;
+use transcode::middleware::MethodPattern;
+use transcode::route::{Capture, MethodInfo};
 
 mod matches;
 mod routes;
@@ -97,6 +98,24 @@ impl Method {
         }
     }
 }
+
+/// The method table, in handler-index order.
+///
+/// A matched route resolves to one of these, which is what a gateway reports in
+/// a tracing span and what a middleware selector dispatches on. Pass it to
+/// `RouteTable::with_methods` beside [`ROUTES`].
+pub static METHODS: &[MethodInfo] = &[
+{{- range .Methods }}
+    MethodInfo {
+        name: {{ printf "%q" .Variant }},
+        full_name: {{ printf "%q" .FullName }},
+        service: {{ printf "%q" .Service }},
+        pattern: MethodPattern::{{ .Pattern }},
+        mutating: {{ .Mutating }},
+        server_stream: {{ .ServerStream }},
+    },
+{{- end }}
+];
 
 /// The API's error domain, stamped into every AIP-193 `ErrorInfo`.
 pub const DOMAIN: &str = {{ printf "%q" .Domain }};

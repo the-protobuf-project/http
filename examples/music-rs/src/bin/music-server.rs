@@ -19,11 +19,18 @@
 //! All three serve the same [`Handler`] value. That is the demonstration: the
 //! handler is written once and is unaware of which transport reached it.
 
+use music_example::generated::DOMAIN;
 use music_example::handler::Handler;
+use music_example::requestids::RequestIds;
 use music_example::serve;
 use music_example::store::Catalog;
 use std::net::SocketAddr;
 use std::sync::Arc;
+use std::time::Duration;
+use transcode::middleware::Selector;
+use transcode::middleware::builtin::{
+    Cors, Deadline, Health, Idempotency, Logging, RealIp, Recovery,
+};
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
@@ -33,7 +40,20 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
         .map_err(|_| "failed to install the rustls crypto provider")?;
 
     let catalog = Arc::new(Catalog::seeded());
-    let handler = Handler::new(catalog);
+
+    // The same stack as the Go example's server. Every policy is selected by
+    // what a method means rather than what it is called, so a method added to
+    // the protos lands in the right buckets without this list being touched.
+    let handler: Handler = Handler::builder(catalog)
+        .layer(Recovery::new())
+        .layer(Logging::new())
+        .layer(Deadline::new(Duration::from_secs(30), DOMAIN))
+        .layer(RealIp::direct())
+        .layer(Cors::permissive())
+        .layer_on(Idempotency::new(RequestIds::new()), Selector::Mutating)
+        .health(Health::healthz())
+        .build()
+        .into();
 
     let plain: SocketAddr = addr_from_env("MUSIC_HTTP_ADDR", "127.0.0.1:8080")?;
     let secure: SocketAddr = addr_from_env("MUSIC_TLS_ADDR", "127.0.0.1:8443")?;

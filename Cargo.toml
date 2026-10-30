@@ -66,6 +66,7 @@ percent-encoding = "2.3"
 # --- runtime and diagnostics ---------------------------------------------
 tokio = { version = "1", features = ["rt", "net", "macros"] }
 futures-util = { version = "0.3", default-features = false }
+futures-channel = { version = "0.3", default-features = false, features = ["std"] }
 thiserror = "2.0"
 tracing = "0.1"
 

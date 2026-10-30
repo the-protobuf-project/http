@@ -16,6 +16,7 @@
 //! See README §1 for the normative rules this implements.
 
 mod decode;
+mod method;
 // Named for the type it defines; the parent module is the public facade.
 #[allow(clippy::module_inception)]
 mod route;
@@ -27,6 +28,7 @@ mod table;
 mod tests;
 
 pub use decode::{CaptureError, DecodeError, decode_segment};
+pub use method::MethodInfo;
 pub use route::Route;
 pub use segment::{Capture, Match, TO_END};
 pub use split::split_path;

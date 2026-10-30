@@ -63,7 +63,9 @@ bytes = { workspace = true }
 tower = { workspace = true }
 tower-service = { workspace = true }
 percent-encoding = { workspace = true }
-futures-util = { workspace = true }
+futures-util = { workspace = true, features = ["std"] }
+# The channel between a call in progress and the response body it feeds.
+futures-channel = { workspace = true }
 # Core, not feature-gated: the AIP-193 error envelope is JSON in every build.
 serde_json = { workspace = true }
 thiserror = { workspace = true }

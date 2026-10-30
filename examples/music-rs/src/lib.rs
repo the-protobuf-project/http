@@ -17,6 +17,7 @@
 pub mod generated;
 pub mod handler;
 pub mod model;
+pub mod requestids;
 pub mod requests;
 pub mod serve;
 pub mod store;

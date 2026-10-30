@@ -73,7 +73,7 @@ pub async fn serve(
             let io = TokioIo::new(stream);
             let service = service_fn(move |req| {
                 let handler = Arc::clone(&handler);
-                async move { Ok::<_, std::convert::Infallible>(handle(&handler, req).await) }
+                async move { Ok::<_, std::convert::Infallible>(handle(&handler, peer, req).await) }
             });
 
             if let Err(err) = http1::Builder::new().serve_connection(io, service).await {

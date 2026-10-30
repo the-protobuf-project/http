@@ -66,7 +66,7 @@ pub mod builtin;
 #[cfg(test)]
 mod tests;
 
-pub use context::{CallCx, Outcome, ResponseParts, RouteCx};
+pub use context::{CallCx, Extensions, Outcome, ResponseParts, RouteCx};
 pub use error_renderer::{DefaultErrorRenderer, ErrorRenderer};
 pub use headers::{
     BINARY_SUFFIX, HeaderMatcher, Headers, METADATA_HEADER_PREFIX, METADATA_PREFIX,

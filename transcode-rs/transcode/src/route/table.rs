@@ -1,6 +1,6 @@
 //! The route table and its resolution rules.
 
-use super::{CaptureError, Route, split_path};
+use super::{CaptureError, MethodInfo, Route, split_path};
 use std::borrow::Cow;
 
 /// A compiled route table, emitted by `protoc-gen-http` already sorted
@@ -21,6 +21,10 @@ pub struct RouteTable {
     /// Cached because it decides whether a trailing `:` in a path is worth
     /// treating as a verb at all, and that question is asked on every request.
     has_verb_routes: bool,
+
+    /// The method table, in handler-index order. Empty for a table built with
+    /// [`RouteTable::new`], which predates it.
+    methods: &'static [MethodInfo],
 }
 
 /// What one path matched.
@@ -78,9 +82,19 @@ pub enum Resolution<'a> {
 impl RouteTable {
     /// Builds a table over a generated route slice.
     pub fn new(routes: &'static [Route]) -> Self {
+        Self::with_methods(routes, &[])
+    }
+
+    /// Builds a table over a generated route slice and its method table.
+    ///
+    /// This is the form a gateway needs: a matched route names a handler index,
+    /// and the method table is what turns that index into a service, a method
+    /// name and an AIP pattern.
+    pub fn with_methods(routes: &'static [Route], methods: &'static [MethodInfo]) -> Self {
         Self {
             routes,
             has_verb_routes: routes.iter().any(|r| !r.verb.is_empty()),
+            methods,
         }
     }
 
@@ -135,5 +149,19 @@ impl RouteTable {
     /// The routes in the table, in scan order.
     pub fn routes(&self) -> &'static [Route] {
         self.routes
+    }
+
+    /// The method table, in handler-index order.
+    pub fn methods(&self) -> &'static [MethodInfo] {
+        self.methods
+    }
+
+    /// The method a handler index names.
+    ///
+    /// `None` means the route table and the method table disagree, which is a
+    /// generator bug rather than anything a caller did — so it is reported
+    /// rather than panicked on.
+    pub fn method(&self, handler: usize) -> Option<&'static MethodInfo> {
+        self.methods.get(handler)
     }
 }

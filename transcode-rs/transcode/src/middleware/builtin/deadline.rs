@@ -13,7 +13,7 @@ use std::time::Duration;
 /// connection-pool exhaustion, and by the time that is visible the cause is
 /// several layers away.
 ///
-/// A client asking for longer than [`Deadline::max`] is capped rather than
+/// A client asking for longer than the maximum (see [`Deadline::with_max`]) is capped rather than
 /// refused, since the request is otherwise perfectly valid.
 #[derive(Debug, Clone)]
 pub struct Deadline {

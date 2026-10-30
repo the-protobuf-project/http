@@ -116,3 +116,23 @@ func keys(m map[string]string) []string {
 	}
 	return out
 }
+
+// TestMethodTableCarriesNamesAndPatterns proves the gateway's method table is
+// emitted: without it a runtime knows a route's handler index but not which
+// service, method or AIP pattern it names, so selectors and error metadata
+// would have nothing to key on.
+func TestMethodTableCarriesNamesAndPatterns(t *testing.T) {
+	mod := generate(t)["mod.rs"]
+
+	for _, want := range []string{
+		"pub static METHODS: &[MethodInfo]",
+		`full_name: "music.v1.ArtistService.GetArtist"`,
+		"pattern: MethodPattern::Get,",
+		"pattern: MethodPattern::Create,",
+		"server_stream: true,",
+	} {
+		if !strings.Contains(mod, want) {
+			t.Errorf("mod.rs is missing %q", want)
+		}
+	}
+}

@@ -18,7 +18,8 @@
 //!   registration order at request time.
 
 use transcode::codec::{CodecEntry, Framing};
-use transcode::route::Capture;
+use transcode::middleware::MethodPattern;
+use transcode::route::{Capture, MethodInfo};
 
 mod matches;
 mod routes;
@@ -173,6 +174,110 @@ impl Method {
         }
     }
 }
+
+/// The method table, in handler-index order.
+///
+/// A matched route resolves to one of these, which is what a gateway reports in
+/// a tracing span and what a middleware selector dispatches on. Pass it to
+/// `RouteTable::with_methods` beside [`ROUTES`].
+pub static METHODS: &[MethodInfo] = &[
+    MethodInfo {
+        name: "GetArtist",
+        full_name: "music.v1.ArtistService.GetArtist",
+        service: "music.v1.ArtistService",
+        pattern: MethodPattern::Get,
+        mutating: false,
+        server_stream: false,
+    },
+    MethodInfo {
+        name: "ListArtists",
+        full_name: "music.v1.ArtistService.ListArtists",
+        service: "music.v1.ArtistService",
+        pattern: MethodPattern::List,
+        mutating: false,
+        server_stream: false,
+    },
+    MethodInfo {
+        name: "CreateArtist",
+        full_name: "music.v1.ArtistService.CreateArtist",
+        service: "music.v1.ArtistService",
+        pattern: MethodPattern::Create,
+        mutating: true,
+        server_stream: false,
+    },
+    MethodInfo {
+        name: "UpdateArtist",
+        full_name: "music.v1.ArtistService.UpdateArtist",
+        service: "music.v1.ArtistService",
+        pattern: MethodPattern::Update,
+        mutating: true,
+        server_stream: false,
+    },
+    MethodInfo {
+        name: "DeleteArtist",
+        full_name: "music.v1.ArtistService.DeleteArtist",
+        service: "music.v1.ArtistService",
+        pattern: MethodPattern::Delete,
+        mutating: true,
+        server_stream: false,
+    },
+    MethodInfo {
+        name: "GetTrack",
+        full_name: "music.v1.TrackService.GetTrack",
+        service: "music.v1.TrackService",
+        pattern: MethodPattern::Get,
+        mutating: false,
+        server_stream: false,
+    },
+    MethodInfo {
+        name: "ListTracks",
+        full_name: "music.v1.TrackService.ListTracks",
+        service: "music.v1.TrackService",
+        pattern: MethodPattern::List,
+        mutating: false,
+        server_stream: false,
+    },
+    MethodInfo {
+        name: "CreateTrack",
+        full_name: "music.v1.TrackService.CreateTrack",
+        service: "music.v1.TrackService",
+        pattern: MethodPattern::Create,
+        mutating: true,
+        server_stream: false,
+    },
+    MethodInfo {
+        name: "UpdateTrack",
+        full_name: "music.v1.TrackService.UpdateTrack",
+        service: "music.v1.TrackService",
+        pattern: MethodPattern::Update,
+        mutating: true,
+        server_stream: false,
+    },
+    MethodInfo {
+        name: "DeleteTrack",
+        full_name: "music.v1.TrackService.DeleteTrack",
+        service: "music.v1.TrackService",
+        pattern: MethodPattern::Delete,
+        mutating: true,
+        server_stream: false,
+    },
+    MethodInfo {
+        name: "WithdrawTrack",
+        full_name: "music.v1.TrackService.WithdrawTrack",
+        service: "music.v1.TrackService",
+        pattern: MethodPattern::Custom,
+        mutating: true,
+        server_stream: false,
+    },
+    MethodInfo {
+        name: "WatchTracks",
+        full_name: "music.v1.TrackService.WatchTracks",
+        service: "music.v1.TrackService",
+        pattern: MethodPattern::Custom,
+        mutating: false,
+        server_stream: true,
+    },
+];
 
 /// The API's error domain, stamped into every AIP-193 `ErrorInfo`.
 pub const DOMAIN: &str = "music.example.com";
