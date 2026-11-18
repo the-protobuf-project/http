@@ -1,0 +1,21 @@
+version: 2
+updates:
+  - package-ecosystem: "gomod"
+    directories:
+      - "/examples/music-go"
+      - "/plugin"
+      - "/transcode-go"
+    schedule:
+      interval: "weekly"
+  - package-ecosystem: "cargo"
+    directories:
+      - "/"
+      - "/examples/music-rs"
+      - "/transcode-rs/transcode"
+      - "/transcode-rs/transcode-build"
+    schedule:
+      interval: "weekly"
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
