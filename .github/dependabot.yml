@@ -7,8 +7,6 @@ updates:
       - "/transcode-go"
     schedule:
       interval: "weekly"
-    assignees:
-      - "ParthuReddy31"
   - package-ecosystem: "cargo"
     directories:
       - "/"
@@ -17,11 +15,7 @@ updates:
       - "/transcode-rs/transcode-build"
     schedule:
       interval: "weekly"
-    assignees:
-      - "ParthuReddy31"
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
       interval: "weekly"
-    assignees:
-      - "ParthuReddy31"
