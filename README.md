@@ -16,6 +16,7 @@ The OpenAPI target is not built yet, and the Python runtime is deferred.
 ## Contents
 
 - [Why not grpc-gateway](#why-not-grpc-gateway)
+- [Install](#install)
 - [Quick start](#quick-start)
 - [Repository layout](#repository-layout)
 - [Building from a clean checkout](#building-from-a-clean-checkout)
@@ -58,6 +59,19 @@ gateway built for gRPC compatibility rather than for API correctness.
 What this project takes from it is real and substantial: the path-template
 opcode design, the metadata-matcher model, the field-path query binding idea,
 and a decade of edge cases found the hard way.
+
+## Install
+
+```sh
+# Homebrew (macOS / Linux)
+brew install --cask the-protobuf-project/tap/protoc-gen-http
+
+# Or a prebuilt binary (linux / darwin / windows) from the Releases page,
+# unpacked onto your PATH
+
+# Or build it with Go
+go install github.com/the-protobuf-project/http/plugin/cmd/protoc-gen-http@latest
+```
 
 ## Quick start
 
