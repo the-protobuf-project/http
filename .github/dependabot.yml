@@ -9,10 +9,7 @@ updates:
       interval: "weekly"
   - package-ecosystem: "cargo"
     directories:
-      - "/"
-      - "/examples/music-rs"
-      - "/transcode-rs/transcode"
-      - "/transcode-rs/transcode-build"
+      - "/" # the workspace: transcode, transcode-build, examples/music-rs
     schedule:
       interval: "weekly"
   - package-ecosystem: "github-actions"
